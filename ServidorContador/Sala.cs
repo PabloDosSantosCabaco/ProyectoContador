@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace ServidorContador
 {
@@ -12,11 +13,27 @@ namespace ServidorContador
         //Lista de clientes
         List<Cliente> clientes = new List<Cliente>();
 
-        public Sala(int idSala,Socket host)
+        public Sala(int idSala,Cliente host)
         {
             this.idSala = idSala;
-            clientes.Add(new Cliente(host));
+            clientes.Add(host);
+            Thread threadEspera = new Thread(()=>espera());
+            threadEspera.Start();
         }
-        
+        public int getID()
+        {
+            return idSala;
+        }
+        public void addCliente(Cliente cliente)
+        {
+            clientes.Add(cliente);
+        }
+        public void espera()
+        {
+            while (!empezado)
+            {
+
+            }
+        }
     }
 }
