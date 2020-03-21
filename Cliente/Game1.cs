@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 namespace Cliente
 {
@@ -12,6 +13,10 @@ namespace Cliente
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        List<Carta> cartas = new List<Carta>();
+        List<Texture2D> cartas_img = new List<Texture2D>();
+        Vector2 escala;
+        Vector2 posicion;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -27,7 +32,10 @@ namespace Cliente
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            cartas.Add(new Carta(Carta.eTipo.Numero, 3, true));
+            cartas.Add(new Carta(Carta.eTipo.Numero, 7, true));
+            cartas.Add(new Carta(Carta.eTipo.Numero, 5, true));
+            this.IsMouseVisible = true;
             base.Initialize();
         }
 
@@ -41,6 +49,21 @@ namespace Cliente
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            string nombre = "";
+            foreach(Carta card in cartas)
+            {
+                switch (card.getTipo())
+                {
+                    case Carta.eTipo.Numero:
+                        nombre = card.getValor().ToString();
+                        break;
+                    case Carta.eTipo.Sentido:
+                        break;
+                    case Carta.eTipo.Efecto:
+                        break;
+                }
+                cartas_img.Add(this.Content.Load<Texture2D>(nombre));
+            }
         }
 
         /// <summary>
@@ -76,7 +99,14 @@ namespace Cliente
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
-
+            posicion = new Vector2(0, graphics.GraphicsDevice.Viewport.Height - this.Content.Load<Texture2D>("3").Height);
+            foreach (Texture2D img in cartas_img)
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(img, posicion,Color.White);
+                spriteBatch.End();
+                posicion.X += this.Content.Load<Texture2D>("3").Width;
+            }
             base.Draw(gameTime);
         }
     }

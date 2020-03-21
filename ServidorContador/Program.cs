@@ -82,35 +82,35 @@ namespace ServidorContador
             {
                 gestionado = true;
                 string res = cliente.recibirDatos();
-                if (res == "new")
+                //Decidimos si crea o se une
+                switch (res)
                 {
-                    //Creamos la sala metiendo al primer cliente como host
-                    crearSala(cliente);
-                }
-                else if (res == "join")
-                {
-                    try
-                    {
-                        //Leemos la sala a la que quiere entrar
-                        int sala = Convert.ToInt32(cliente.recibirDatos());
-                        //Gestionamos que el cliente no haya podido entrar en la sala
-                        if (!entrarSala(cliente, sala))
+                    case "new":
+                            //Creamos la sala metiendo al primer cliente como host
+                            crearSala(cliente);
+                            break;
+                    case "join":
+                        try
                         {
-                            Console.WriteLine($"El cliente {cliente.getIP()} no ha podido conectarse a la sala {sala}");
-                            gestionado = false;
+                            //Leemos la sala a la que quiere entrar
+                            int sala = Convert.ToInt32(cliente.recibirDatos());
+                            //Gestionamos que el cliente no haya podido entrar en la sala
+                            if (!entrarSala(cliente, sala))
+                            {
+                                Console.WriteLine($"El cliente {cliente.getIP()} no ha podido conectarse a la sala {sala}");
+                                gestionado = false;
+                            }
                         }
-                    }
-                    catch (FormatException fEx) { }
-                    catch (OverflowException oEx) { }
-                }
-                else if(res == null)
-                {
-                    Console.WriteLine("Cliente desconectado");
-                }
-                else
-                {
-                    Console.WriteLine("Comando no soportado");
-                    gestionado = false;
+                        catch (FormatException fEx) { }
+                        catch (OverflowException oEx) { }
+                        break;
+                    case null:
+                        Console.WriteLine("Cliente desconectado");
+                        break;
+                    default:
+                        Console.WriteLine("Comando no soportado");
+                        gestionado = false;
+                        break;
                 }
             } while (!gestionado);
         }
