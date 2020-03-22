@@ -15,3 +15,7 @@
 * Pruebas de dibujado con MonoGame.
 * Creación de la clase Carta.
 * Creación de sprites de la baraja de cartas.
+## 22/03/2020
+#### Nuevo
+* Conseguida disposición del contenido  de la mesa de cartas de cada usuario.
+* Redimensión del contenido en función de las dimensiones de la ventana.
