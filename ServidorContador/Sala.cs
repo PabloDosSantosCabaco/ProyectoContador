@@ -8,32 +8,19 @@ namespace ServidorContador
 {
     class Sala
     {
-        readonly int idSala;
-        bool empezado = false;
         //Lista de clientes
-        List<Cliente> clientes = new List<Cliente>();
+        public List<Cliente> Clientes { get; set; } = new List<Cliente>();
+        public int IdSala { get; }
+        public bool Empezado { get; set; }
 
         public Sala(int idSala,Cliente host)
         {
-            this.idSala = idSala;
-            clientes.Add(host);
-            Thread threadEspera = new Thread(()=>espera());
-            threadEspera.Start();
-        }
-        public int getID()
-        {
-            return idSala;
+            IdSala = idSala;
+            Clientes.Add(host);
         }
         public void addCliente(Cliente cliente)
         {
-            clientes.Add(cliente);
-        }
-        public void espera()
-        {
-            while (!empezado)
-            {
-
-            }
+            Clientes.Add(cliente);
         }
     }
 }

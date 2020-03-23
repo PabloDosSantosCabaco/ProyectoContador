@@ -54,8 +54,9 @@ namespace ServidorContador
             //Aumento el identificador para evitar repetir salas
             contadorSalas++;
             //Añado la sala a la colección
-            salas.Add(sala.getID(), sala);
-            
+            salas.Add(sala.IdSala, sala);
+            Thread hiloSala = new Thread(()=>salaEspera(sala));
+            hiloSala.Start();
         }
         public bool entrarSala(Cliente cliente,int sala)
         {
@@ -63,8 +64,10 @@ namespace ServidorContador
             if (salas.ContainsKey(sala))
             {
                 //El cliente entra en la sala
-                salas.GetValueOrDefault(sala).addCliente(cliente);
-                cliente.enviarDatos($"Cliente añadido a la sala {sala}");
+                lock (salas.GetValueOrDefault(sala)) {
+                    salas.GetValueOrDefault(sala).addCliente(cliente);
+                    cliente.enviarDatos($"Cliente añadido a la sala {sala}");
+                }
                 return true;
             }
             else
@@ -113,6 +116,41 @@ namespace ServidorContador
                         break;
                 }
             } while (!gestionado);
+        }
+        public void salaEspera(Sala sala)
+        {
+            //TODO
+            //Comprobar cuando se va un cliente
+            //¿Qué pasa si se va el host? ¿Cómo se gestiona al resto de clientes?
+            Cliente host;
+            lock (sala)
+            {
+                host = sala.Clientes[0];
+            }
+            do
+            {
+                string res = host.recibirDatos();
+                switch (res) {
+                    case "empezar":
+                    lock (sala)
+                    {
+                        if (sala.Clientes.Count >= 2)
+                        {
+                            sala.Empezado = true;
+                        }
+                    }
+                        break;
+                    case "cant":
+                        host.enviarDatos(sala.Clientes.Count+"");
+                        break;
+                }
+                Thread.Sleep(1);
+            } while (!sala.Empezado);
+            bool partidaAcabada = false;
+            do
+            {
+
+            } while (!partidaAcabada);
         }
     }
 }
