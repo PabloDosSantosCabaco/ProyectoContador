@@ -14,6 +14,7 @@ namespace ServidorContador
         bool serveOpened = false;
         private int contadorSalas = 0;
         Dictionary<int, Sala> salas = new Dictionary<int, Sala>();
+        int maxClientes = 8;
 
         static void Main(string[] args)
         {
@@ -48,8 +49,11 @@ namespace ServidorContador
         }
         public void crearSala(Cliente cliente)
         {
+            string nombre;
+            cliente.enviarDatos("Escribe tu nombre:");
+            nombre=cliente.recibirDatos();
             //Creo la nueva sala
-            Sala sala = new Sala(contadorSalas,cliente);
+            Sala sala = new Sala(contadorSalas,nombre,cliente);
             cliente.enviarDatos(contadorSalas.ToString());
             //Aumento el identificador para evitar repetir salas
             contadorSalas++;
@@ -60,12 +64,14 @@ namespace ServidorContador
         }
         public bool entrarSala(Cliente cliente,int sala)
         {
-            //Comprueba si la sala a la que quiere entrar existe
-            if (salas.ContainsKey(sala))
+            //Comprueba si la sala a la que quiere entrar existe y si tiene menos de 8 clientes
+            if (salas.ContainsKey(sala) && salas.GetValueOrDefault(sala).Clientes.Count<maxClientes)
             {
+                cliente.enviarDatos("Escribe tu nombre:");
+                string nombre = cliente.recibirDatos();
                 //El cliente entra en la sala
                 lock (salas.GetValueOrDefault(sala)) {
-                    salas.GetValueOrDefault(sala).addCliente(cliente);
+                    salas.GetValueOrDefault(sala).addCliente(nombre,cliente);
                     cliente.enviarDatos($"Cliente añadido a la sala {sala}");
                 }
                 return true;
@@ -96,11 +102,13 @@ namespace ServidorContador
                         try
                         {
                             //Leemos la sala a la que quiere entrar
+                            cliente.enviarDatos("Introduce la sala:");
                             int sala = Convert.ToInt32(cliente.recibirDatos());
                             //Gestionamos que el cliente no haya podido entrar en la sala
                             if (!entrarSala(cliente, sala))
                             {
                                 Console.WriteLine($"El cliente {cliente.getIP()} no ha podido conectarse a la sala {sala}");
+                                cliente.enviarDatos("La sala a la que intentas entrar o existe o está llena.");
                                 gestionado = false;
                             }
                         }
@@ -108,10 +116,10 @@ namespace ServidorContador
                         catch (OverflowException oEx) { }
                         break;
                     case null:
-                        Console.WriteLine("Cliente desconectado");
+                        cliente.enviarDatos("Cliente desconectado");
                         break;
                     default:
-                        Console.WriteLine("Comando no soportado");
+                        cliente.enviarDatos("Comando no soportado");
                         gestionado = false;
                         break;
                 }
@@ -125,7 +133,7 @@ namespace ServidorContador
             Cliente host;
             lock (sala)
             {
-                host = sala.Clientes[0];
+                host = sala.Clientes.GetValueOrDefault(sala.NombreHost);
             }
             do
             {
@@ -136,7 +144,12 @@ namespace ServidorContador
                     {
                         if (sala.Clientes.Count >= 2)
                         {
+                            host.enviarDatos("Empieza el juego");
                             sala.Empezado = true;
+                        }
+                        else
+                        {
+                            host.enviarDatos("Todavia no Empieza el juego");
                         }
                     }
                         break;
@@ -146,11 +159,157 @@ namespace ServidorContador
                 }
                 Thread.Sleep(1);
             } while (!sala.Empezado);
+            partida(sala);
+        }
+        public void partida(Sala sala)
+        {
+            Partida partida = new Partida();
+            PaqueteTurno paquete;
+            List<string> nombresJugadores = new List<string>();
             bool partidaAcabada = false;
+
+            foreach(var cl in sala.Clientes)
+            {
+                List<Carta> baraja = new List<Carta>();
+                for (int i=0; i<8; i++)
+                {
+                    baraja.Add(cartaRandom());
+                }
+                partida.BarajasJugadores.Add(cl.Key, baraja);
+                nombresJugadores.Add(cl.Key);
+                cl.Value.enviarDatos($"Tu nombre es: {cl.Key}\n");
+                /*for(int i=0; i< partida.BarajasJugadores[cl.Key].Count; i++)
+                {
+                    cl.Value.enviarDatos($"Carta: {partida.BarajasJugadores[cl.Key][i].Tipo}\n");
+                    cl.Value.enviarDatos($"Carta: {partida.BarajasJugadores[cl.Key][i].Valor}\n");
+                    cl.Value.enviarDatos($"Carta: {partida.BarajasJugadores[cl.Key][i].Sentido}\n");
+                    cl.Value.enviarDatos("-----------------------------------------------");
+                }*/
+            }
+            partida.Turno = nombresJugadores[0];
+
             do
             {
-
+                foreach(var cl in sala.Clientes)
+                {
+                    cl.Value.enviarDatos($"Turno de: {partida.Turno}");
+                }
+                Carta cartaJugada = null;
+                switch (sala.Clientes[partida.Turno].recibirDatos())
+                {
+                    case "jugar":
+                        cartaJugada = sala.Clientes[partida.Turno].recibirCarta();
+                        //Borro de su baraja la carta jugada
+                        partida.BarajasJugadores[partida.Turno].Remove(buscarCarta(cartaJugada, partida.BarajasJugadores[partida.Turno]));
+                        //La carta realiza su función en mesa
+                        switch (cartaJugada.Tipo)
+                        {
+                            case Carta.eTipo.Numero:
+                                //En función del sentido de la mesa, sumamos o restamos su valor
+                                if (partida.SentidoMesa)
+                                {
+                                    partida.ValorMesa += cartaJugada.Valor;
+                                }
+                                else
+                                {
+                                    partida.ValorMesa -= cartaJugada.Valor;
+                                }
+                                //Si el jugador sobrepasa el límite, se reinicia el valor de mesa y se
+                                //añaden 3 cartas a su baraja.
+                                if(partida.ValorMesa>=partida.Limite || partida.ValorMesa <= -partida.Limite)
+                                {
+                                    partida.ValorMesa = 0;
+                                    for(int i=0; i<3; i++)
+                                    {
+                                        partida.BarajasJugadores[partida.Turno].Add(cartaRandom());
+                                    }
+                                }
+                                break;
+                            case Carta.eTipo.Sentido:
+                                //Se cambia la operación de la mesa
+                                partida.SentidoMesa = cartaJugada.Sentido;
+                                break;
+                            case Carta.eTipo.Efecto:
+                                //Cada jugador recibe 2 cartas a excepción del que ha jugado último
+                                foreach (var cl in partida.BarajasJugadores)
+                                {
+                                    if (cl.Key != partida.Turno)
+                                    {
+                                        for (int i = 0; i < 2; i++)
+                                        {
+                                            cl.Value.Add(cartaRandom());
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                        break;
+                    case "pasar":
+                        partida.BarajasJugadores[partida.Turno].Add(cartaRandom());
+                        break;
+                }
+                //Compruebo si el último jugador tiene cartas.
+                //En caso de no tener, guardo su nombre para borrarlo de la
+                //lista de nombres de jugadores y borrarlo como cliente de la sala.
+                string adiosJugador = null;
+                if (partida.BarajasJugadores[partida.Turno].Count <= 0)
+                {
+                    adiosJugador = partida.Turno;
+                    sala.Clientes.Remove(partida.Turno);
+                }
+                //Avanzar turno
+                partida.Turno = avanzarTurno(nombresJugadores, partida.Turno);
+                if (adiosJugador != null)
+                {
+                    partida.BarajasJugadores.Remove(adiosJugador);
+                    nombresJugadores.Remove(adiosJugador);
+                }
             } while (!partidaAcabada);
+        }
+        public string avanzarTurno(List<string> nombres,string turno)
+        {
+            return nombres.IndexOf(turno) + 1 >= nombres.Count ? nombres[0] : nombres[nombres.IndexOf(turno) + 1];
+        }
+        //Busca dentro de una baraja una carta concreta y la devuelve.
+        public Carta buscarCarta(Carta cartaJugada,List<Carta> baraja)
+        {
+            foreach(Carta card in baraja)
+            {
+                if(card.Sentido==cartaJugada.Sentido &&
+                    card.Valor==cartaJugada.Valor &&
+                    card.Tipo == cartaJugada.Tipo)
+                {
+                    return card;
+                }
+            }
+            return null;
+        }
+        public Carta cartaRandom()
+        {
+            Random rand = new Random();
+            int num = 0;
+            Carta.eTipo tipo = Carta.eTipo.Numero;
+            int valor = 0;
+            bool sentido = true;
+            num = rand.Next(0, 10);
+            //Hay un 70% de probabilidades de que salga Numero
+            if (num < 7)
+            {
+                tipo = Carta.eTipo.Numero;
+            }
+            //Hay un 20% de probabilidades de que salga Sentido
+            else if (num < 9)
+            {
+                tipo = Carta.eTipo.Sentido;
+            }
+            //Hay un 10% de probabilidades de que salga Efecto
+            else
+            {
+                tipo = Carta.eTipo.Efecto;
+            }
+            valor = rand.Next(3, 8);
+            sentido = rand.Next(0, 2) == 0 ? true : false;
+            return new Carta(tipo, valor, sentido);
         }
     }
 }

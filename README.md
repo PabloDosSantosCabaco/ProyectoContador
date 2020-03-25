@@ -27,3 +27,13 @@
 #### Modificaciones
 * Los datos como nº de jugadores por partida, turno, valor de mesa y cartas de cada jugador se pasan como único objeto de clase **PaqueteTurno**, que es enviado a cada jugador después de cada turno.
 * Existe duplicada la clase **Carta** en ambos proyectos ya que es necesaria en ambos. Se plantea la creación de una librería de clases en caso de necesitar más clases compartidas. Para una sola tan simple, se ha dejado duplicada.
+## 25/03/2020
+#### Nuevo
+* Creación de la clase **Partida** que contendrá los datos de una partida, como el *valor de mesa*, *sentido* del contador, *jugadores* de la sala,*turno* del jugador actual y *límite* que alcanza el contador.
+* Duplicado de la clase **PaqueteTurno**. Aún no se ha creado la biblioteca de clases ya que no está claro como se intercambiarán datos entre el cliente y el servidor, si como objetos o propiedad a propiedad.
+* Programada modificación de barajas de jugadores en función de qué carta haya sido jugada en un turno. La aplicación cuenta con una base ya funcional de cómo será el juego.
+* Las cartas se generan de forma aleatoria con un porcetanje de probabilidad en cuanto al **tipo** de carta.
+* Creación de una función en la clase **Cliente** que envíe la carta jugada al servidor.
+#### Modificaciones
+* La lista de clientes de la clase **Sala** pasa a ser un *Diccionario* para mayor facilidad a la hora de encontrar jugadores e información sobre ellos.
+* **Carta Efecto** modificada. Ya no suma tantas cartas como jugadores existan en ese momento. Haciendo cálculos, la estadística apunta a que el juego se extenderá mucho en caso de que se sumen tantas cartas a los jugadores, por lo que se reducen a 2.

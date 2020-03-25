@@ -9,18 +9,20 @@ namespace ServidorContador
     class Sala
     {
         //Lista de clientes
-        public List<Cliente> Clientes { get; set; } = new List<Cliente>();
+        public Dictionary<string, Cliente> Clientes { get; set; } = new Dictionary<string, Cliente>();
         public int IdSala { get; }
         public bool Empezado { get; set; }
+        public string NombreHost { get; set; }
 
-        public Sala(int idSala,Cliente host)
+        public Sala(int idSala,string nombre,Cliente host)
         {
             IdSala = idSala;
-            Clientes.Add(host);
+            Clientes.Add(nombre, host);
+            NombreHost = nombre;
         }
-        public void addCliente(Cliente cliente)
+        public void addCliente(string nombre,Cliente cliente)
         {
-            Clientes.Add(cliente);
+            Clientes.Add(nombre,cliente);
         }
     }
 }

@@ -15,37 +15,32 @@ namespace ServidorContador
         private eTipo tipo;
         private int valor;
         private bool sentido;
-
-        public Carta(eTipo tipo,int valor,bool sentido)
+        public eTipo Tipo { get; set; }
+        public int Valor
         {
-            this.tipo = tipo;
-            this.valor = valor;
-            this.sentido = sentido;
+            set
+            {
+                if (valor < 3)
+                {
+                    valor = 3;
+                }
+                else if (valor > 7)
+                {
+                    valor = 7;
+                }
+                this.valor = value;
+            }
+            get
+            {
+                return this.valor;
+            }
         }
-
-        public void setTipo(eTipo tipo)
+        public bool Sentido { get; set; }
+        public Carta(eTipo tipo, int valor, bool sentido)
         {
-            this.tipo = tipo;
-        }
-        public void setValor(int valor)
-        {
-            this.valor = valor;
-        }
-        public void setSentido(bool sentido)
-        {
-            this.sentido = sentido;
-        }
-        public eTipo getTipo()
-        {
-            return this.tipo;
-        }
-        public int getValor()
-        {
-            return this.valor;
-        }
-        public bool getSentido()
-        {
-            return this.sentido;
+            Valor = valor;
+            Tipo = tipo;
+            Sentido = sentido;
         }
     }
 }
