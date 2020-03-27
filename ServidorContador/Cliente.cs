@@ -14,8 +14,6 @@ namespace ServidorContador
         StreamWriter sw;
         Socket socket;
 
-
-
         public Cliente(Socket socketCliente)
         {
             socket = socketCliente;
@@ -40,12 +38,22 @@ namespace ServidorContador
         {
 
         }
+        public void enviarCarta(Carta carta)
+        {
+            enviarDatos(carta.Tipo.ToString());
+            enviarDatos(carta.Valor.ToString());
+            enviarDatos(carta.Sentido.ToString());
+        }
         public Carta recibirCarta()
         {
             Carta.eTipo tipo = (Carta.eTipo)Enum.Parse(typeof(Carta.eTipo), sr.ReadLine());
             int valor = Convert.ToInt32(sr.ReadLine());
             bool sentido = Convert.ToBoolean(sr.ReadLine());
             return new Carta(tipo,valor,sentido);
+        }
+        public void desconectar()
+        {
+            socket.Close();
         }
     }
 }

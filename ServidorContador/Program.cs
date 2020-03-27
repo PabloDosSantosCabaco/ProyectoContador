@@ -178,21 +178,26 @@ namespace ServidorContador
                 partida.BarajasJugadores.Add(cl.Key, baraja);
                 nombresJugadores.Add(cl.Key);
                 cl.Value.enviarDatos($"Tu nombre es: {cl.Key}\n");
-                /*for(int i=0; i< partida.BarajasJugadores[cl.Key].Count; i++)
-                {
-                    cl.Value.enviarDatos($"Carta: {partida.BarajasJugadores[cl.Key][i].Tipo}\n");
-                    cl.Value.enviarDatos($"Carta: {partida.BarajasJugadores[cl.Key][i].Valor}\n");
-                    cl.Value.enviarDatos($"Carta: {partida.BarajasJugadores[cl.Key][i].Sentido}\n");
-                    cl.Value.enviarDatos("-----------------------------------------------");
-                }*/
             }
             partida.Turno = nombresJugadores[0];
 
             do
             {
-                foreach(var cl in sala.Clientes)
+                foreach (var cl in sala.Clientes)
                 {
                     cl.Value.enviarDatos($"Turno de: {partida.Turno}");
+                    cl.Value.enviarDatos($"Valor de mesa actual: {partida.ValorMesa}");
+                    cl.Value.enviarDatos($"Sentido de mesa actual: {partida.SentidoMesa}");
+                    cl.Value.enviarDatos($"Cantidad cartas: {partida.BarajasJugadores[cl.Key].Count}");
+                    cl.Value.enviarDatos("Jugadores activos");
+                    foreach(var v in partida.BarajasJugadores)
+                    {
+                        cl.Value.enviarDatos($"{v.Key} {v.Value.Count}");
+                    }
+                    foreach (var carta in partida.BarajasJugadores[cl.Key]) {
+                        cl.Value.enviarCarta(carta);
+                        cl.Value.enviarDatos("-------------");
+                    }
                 }
                 Carta cartaJugada = null;
                 switch (sala.Clientes[partida.Turno].recibirDatos())
@@ -247,6 +252,9 @@ namespace ServidorContador
                     case "pasar":
                         partida.BarajasJugadores[partida.Turno].Add(cartaRandom());
                         break;
+                    default:
+                        sala.Clientes[partida.Turno].enviarDatos("Debes jugar o pasar");
+                        continue;
                 }
                 //Compruebo si el último jugador tiene cartas.
                 //En caso de no tener, guardo su nombre para borrarlo de la
@@ -255,6 +263,7 @@ namespace ServidorContador
                 if (partida.BarajasJugadores[partida.Turno].Count <= 0)
                 {
                     adiosJugador = partida.Turno;
+                    sala.Clientes[partida.Turno].desconectar();
                     sala.Clientes.Remove(partida.Turno);
                 }
                 //Avanzar turno
@@ -264,7 +273,15 @@ namespace ServidorContador
                     partida.BarajasJugadores.Remove(adiosJugador);
                     nombresJugadores.Remove(adiosJugador);
                 }
+                if (nombresJugadores.Count < 2)
+                {
+                    partidaAcabada = true;
+                }
             } while (!partidaAcabada);
+            foreach(var cl in sala.Clientes)
+            {
+                cl.Value.desconectar();
+            }
         }
         public string avanzarTurno(List<string> nombres,string turno)
         {

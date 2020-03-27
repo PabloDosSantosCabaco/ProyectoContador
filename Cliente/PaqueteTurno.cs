@@ -8,20 +8,17 @@ namespace Cliente
 {
     class PaqueteTurno
     {
-        Dictionary<string, int> jugadores = new Dictionary<string, int>();
-        int valorMesa;
-        int turno;
-        List<Carta> cartas = new List<Carta>();
-
         public Dictionary<string, int> Jugadores { get; set; }
         public int ValorMesa { get; set; }
-        public int Turno { get; set; }
+        public string Turno { get; set; }
+        public bool Sentido { get; set; }
         public List<Carta> Cartas { get; set; }
 
-        public PaqueteTurno(List<Carta> cartas,int valorMesa,int turno,Dictionary<string,int> jugadores)
+        public PaqueteTurno(List<Carta> cartas,int valorMesa,bool sentido,string turno,Dictionary<string,int> jugadores)
         {
             Cartas = cartas;
-            ValorMesa = ValorMesa;
+            Sentido = sentido;
+            ValorMesa = valorMesa;
             Turno = turno;
             Jugadores = jugadores;
         }
