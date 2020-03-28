@@ -42,3 +42,6 @@
 * Creación de la clase **Boton** en el proyecto **Cliente** para la interacción con las cartas por parte del jugador.
 * La resolución de posibles errores son anotados en github para resolverlos al finalizar el proyecto.
 * Conseguido el funcionamiento básico del servidor. Permite partidas simples por consola.
+## 28/03/2020
+#### Avances
+* Colocación de los elementos visuales en el cliente y recepción del con click en los botones necesarios.
