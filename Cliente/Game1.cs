@@ -1,9 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
-using System.Net;
+using System.IO;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace Cliente
 {
@@ -16,6 +18,13 @@ namespace Cliente
         SpriteBatch spriteBatch;
 
         TcpClient client;
+        NetworkStream ns;
+        StreamWriter sw;
+        StreamReader sr;
+        Thread hiloConectividad;
+        string miNombre;
+        bool ratonPresionado;
+
         bool conectado = false;
         //Imagenes cartas
         Dictionary<string, Texture2D> cartas = new Dictionary<string, Texture2D>();
@@ -41,7 +50,7 @@ namespace Cliente
         //Maximo numero de cartas que se muestran a la vez
         int maxCartas = 8;
         PaqueteTurno datos;
-        
+
         //Determina si el jugador ha acabado
         bool terminar;
         //Texture2D que nos permite tener siempre acceso a una carta
@@ -64,47 +73,77 @@ namespace Cliente
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            /*for (int i = 31416; i < 31420; i++)
+            for (int i = 31416; i < 31420; i++)
             {
                 try
                 {
                     client = new TcpClient("127.0.0.1", 31416);
                     conectado = true;
+                    ns = client.GetStream();
+                    sr = new StreamReader(ns);
+                    sw = new StreamWriter(ns);
+                    sw.WriteLine("join");
+                    sw.Flush();
+                    sw.WriteLine("0");
+                    sw.Flush();
+                    miNombre = "Kenny";
+                    sw.WriteLine(miNombre);
+                    sw.Flush();
                     break;
                 }
                 catch (SocketException ex)
                 {
 
                 }
-            }*/
-            conectado = true;
-            cartaSeleccionada = -1;
-            datos = new PaqueteTurno(new List<Carta>(), 0,true, "1", new Dictionary<string, int>());
-            datos.Jugadores.Add("Jugador 1", 5);
-            datos.Jugadores.Add("Jugador 2", 3);
-            datos.Cartas.Add(new Carta(Carta.eTipo.Numero, 3, true));
-            datos.Cartas.Add(new Carta(Carta.eTipo.Numero, 4, true));
-            datos.Cartas.Add(new Carta(Carta.eTipo.Numero, 5, true));
-            //datos.Cartas.Add(new Carta(Carta.eTipo.Numero, 6, true));
-            datos.Cartas.Add(new Carta(Carta.eTipo.Numero, 7, true));
-            //datos.Cartas.Add(new Carta(Carta.eTipo.Sentido, 0, true));
-            datos.Cartas.Add(new Carta(Carta.eTipo.Sentido, 0, false));
-            datos.Cartas.Add(new Carta(Carta.eTipo.Efecto, 0, true));
-            
-
-            //Al empezar el jugador está jugando
-            terminar = false;
-            //Volvemos visible el puntero
-            this.IsMouseVisible = true;
-            //Permitimos ver el cursor en la centana
-            //Window.AllowUserResizing = true;
-            altoPantalla = graphics.GraphicsDevice.Viewport.Height;
-            anchoPantalla = graphics.GraphicsDevice.Viewport.Width;
-            columna = anchoPantalla / maxCartas;
+            }
+            if (conectado)
+            {
+                cartaSeleccionada = -1;
+                actualizarDatos();
+                hiloConectividad = new Thread(() => comprobarTurno());
+                hiloConectividad.Start();
+                //Al empezar el jugador está jugando
+                terminar = false;
+                //Volvemos visible el puntero
+                this.IsMouseVisible = true;
+                //Permitimos ver el cursor en la centana
+                //Window.AllowUserResizing = true;
+                altoPantalla = graphics.GraphicsDevice.Viewport.Height;
+                anchoPantalla = graphics.GraphicsDevice.Viewport.Width;
+                columna = anchoPantalla / maxCartas;
+                ratonPresionado = false;
+            }
             //Valores marcadores
             base.Initialize();
         }
-
+        public void comprobarTurno()
+        {
+            while (conectado)
+            {
+                actualizarDatos();
+            }
+        }
+        public void actualizarDatos()
+        {
+            string aux = sr.ReadLine();
+            Console.WriteLine(aux);
+            int numCartas = Convert.ToInt32(aux);
+            List<Carta> auxLista = new List<Carta>();
+            for (int i = 0; i < numCartas; i++)
+            {
+                auxLista.Add(new Carta((Carta.eTipo)Enum.Parse(typeof(Carta.eTipo), sr.ReadLine()), Convert.ToInt32(sr.ReadLine()), Convert.ToBoolean(sr.ReadLine())));
+            }
+            int auxValor = Convert.ToInt32(sr.ReadLine());
+            bool auxSentido = Convert.ToBoolean(sr.ReadLine());
+            string auxTurno = sr.ReadLine();
+            Dictionary<string, int> auxDic = new Dictionary<string, int>();
+            int numJugadores = Convert.ToInt32(sr.ReadLine());
+            for (int i = 0; i < numJugadores; i++)
+            {
+                auxDic.Add(sr.ReadLine(), Convert.ToInt32(sr.ReadLine()));
+            }
+            datos = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
+        }
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
@@ -117,9 +156,9 @@ namespace Cliente
             // TODO: use this.Content to load your game content here
             if (conectado)
             {
-                for(int i=3; i<8; i++)
+                for (int i = 3; i < 8; i++)
                 {
-                    cartas.Add(i.ToString(), this.Content.Load<Texture2D>("Sprites/"+i));
+                    cartas.Add(i.ToString(), this.Content.Load<Texture2D>("Sprites/" + i));
                 }
                 cartas.Add("bucle", this.Content.Load<Texture2D>("Sprites/bucle"));
                 cartas.Add("minus", this.Content.Load<Texture2D>("Sprites/minus"));
@@ -129,7 +168,7 @@ namespace Cliente
                 fuenteValor = this.Content.Load<SpriteFont>("Fuentes/FuenteValor");
                 cartaEjemplo = cartas["3"];
                 //Establecemos el reescalado de las cartas
-                escalaCartas = new Vector2(columna*8/10 / (float)cartaEjemplo.Width, columna * 8 / 10 / (float)cartaEjemplo.Width);
+                escalaCartas = new Vector2(columna * 8 / 10 / (float)cartaEjemplo.Width, columna * 8 / 10 / (float)cartaEjemplo.Width);
 
                 btnJugarImg = this.Content.Load<Texture2D>("Sprites/btnJugar");
                 btnPasarImg = this.Content.Load<Texture2D>("Sprites/btnPasar");
@@ -172,29 +211,45 @@ namespace Cliente
                     escalaCartas = new Vector2(columna * 8 / 10 / (float)cartaEjemplo.Width, columna * 8 / 10 / (float)cartaEjemplo.Width);
                 }
                 //Para cada carta del jugador, se carga su correspondiente imagen
-                
-                foreach (Boton btn in cartasBtn)
+                jugar.X = anchoPantalla / 2 - jugar.Ancho;
+                jugar.Y = altoPantalla / 2;
+                pasar.X = anchoPantalla / 2;
+                pasar.Y = jugar.Y;
+                actualizarBaraja();
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed)
                 {
-                    if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                    ratonPresionado = true;
+                }
+                if (ratonPresionado && Mouse.GetState().LeftButton == ButtonState.Released)
+                {
+                    Console.WriteLine(cartaSeleccionada);
+                    if (datos.Turno == miNombre)
+                    {
+                        if (pasar.click(Mouse.GetState().X, Mouse.GetState().Y))
+                        {
+                            sw.WriteLine("pasar");
+                            sw.Flush();
+                        }
+                        if (jugar.click(Mouse.GetState().X, Mouse.GetState().Y) && cartaSeleccionada != -1)
+                        {
+                            sw.WriteLine("jugar");
+                            sw.WriteLine(datos.Cartas[cartaSeleccionada].Tipo.ToString());
+                            sw.WriteLine(datos.Cartas[cartaSeleccionada].Valor.ToString());
+                            sw.WriteLine(datos.Cartas[cartaSeleccionada].Sentido.ToString());
+                            sw.Flush();
+                            cartaSeleccionada = -1;
+                        }
+                    }
+                    foreach (Boton btn in cartasBtn)
                     {
                         if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
                         {
                             cartaSeleccionada = cartasBtn.IndexOf(btn);
-                            btn.Imagen = this.Content.Load<Texture2D>("Sprites/3");
-                        }
-                        //Si el jugador le da a jugar y ha preseleccionado carta, la juega
-                        if(jugar.click(Mouse.GetState().X, Mouse.GetState().Y) && cartaSeleccionada!=-1)
-                        {
-
-                        }
-                        //Si el jugador le da a pasar, no juega carta y suma 1 a su baraja
-                        if(pasar.click(Mouse.GetState().X, Mouse.GetState().Y) && cartaSeleccionada != -1)
-                        {
-
                         }
                     }
+                    ratonPresionado = false;
                 }
-                
+
             }
             base.Update(gameTime);
         }
@@ -224,6 +279,13 @@ namespace Cliente
                         break;
                 }
                 cartasBtn.Add(new Boton(0, 0, cartas[nombre], columna * 8 / 10, escalaCartas.Y * cartaEjemplo.Height));
+                posicionCartas = new Vector2(columna / 10, altoPantalla / 2 + columna * 8 / 10 / 2);
+                foreach (Boton btn in cartasBtn)
+                {
+                    btn.X = posicionCartas.X;
+                    btn.Y = posicionCartas.Y;
+                    posicionCartas.X += columna;
+                }
             }
         }
 
@@ -256,16 +318,12 @@ namespace Cliente
         public void dibujarCartas()
         {
             //Estableceemos donde empezarán a dibujarse 
-            posicionCartas = new Vector2(columna / 10, altoPantalla / 2 + columna*8/10 / 2);
+            posicionCartas = new Vector2(columna / 10, altoPantalla / 2 + columna * 8 / 10 / 2);
             //Dibujado de las cartas
             foreach (Boton btn in cartasBtn)
             {
                 //Dibujamos la carta
-                spriteBatch.Draw(btn.Imagen, position: posicionCartas, scale: escalaCartas);
-                btn.X = posicionCartas.X;
-                btn.Y = posicionCartas.Y;
-                //Actualizamos la posicion x de las cartas
-                posicionCartas.X += columna;
+                spriteBatch.Draw(btn.Imagen, position: new Vector2(btn.X,btn.Y), scale: escalaCartas);
             }
         }
         public void dibujarMesa()
@@ -279,7 +337,7 @@ namespace Cliente
                 );
             spriteBatch.DrawString(
                 fuenteValor,
-                datos.Sentido?"+":"-",
+                datos.Sentido ? "+" : "-",
                 new Vector2(anchoPantalla / 2, altoPantalla / 4) - fuenteValor.MeasureString(datos.ValorMesa.ToString()) / 2 - fuenteValor.MeasureString(datos.Sentido.ToString()),
                 Color.White);
         }

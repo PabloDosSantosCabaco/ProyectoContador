@@ -45,3 +45,11 @@
 ## 28/03/2020
 #### Avances
 * Colocación de los elementos visuales en el cliente y recepción del con click en los botones necesarios.
+## 29/03/2020
+#### Nuevo
+* Creación de la función **actualizarDatos()** en el juego del proyecto **Cliente** que servirá para intercambiar información entre cada turno de la partida.
+* Primera prueba de juego entre cliente y servidor a través de interfaz gráfica con éxito.
+#### Modificaciones
+* Comprobación de clicks sobre botones mejorada, comprueba si hace un *press* y un *release*.
+* Comprobación de si es el turno del cliente para poder gestionar los clicks.
+* Básicamente, hoy ha sido enlazar la comunicación cliente-servidor.

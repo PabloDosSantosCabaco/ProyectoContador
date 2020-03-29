@@ -67,12 +67,12 @@ namespace ServidorContador
             //Comprueba si la sala a la que quiere entrar existe y si tiene menos de 8 clientes
             if (salas.ContainsKey(sala) && salas.GetValueOrDefault(sala).Clientes.Count<maxClientes)
             {
-                cliente.enviarDatos("Escribe tu nombre:");
+                //cliente.enviarDatos("Escribe tu nombre:");
                 string nombre = cliente.recibirDatos();
                 //El cliente entra en la sala
                 lock (salas.GetValueOrDefault(sala)) {
                     salas.GetValueOrDefault(sala).addCliente(nombre,cliente);
-                    cliente.enviarDatos($"Cliente añadido a la sala {sala}");
+                    //cliente.enviarDatos($"Cliente añadido a la sala {sala}");
                 }
                 return true;
             }
@@ -84,7 +84,7 @@ namespace ServidorContador
         public void gestionCliente(Socket socket)
         {
             Cliente cliente = new Cliente(socket);
-            cliente.enviarDatos("Bienvenido");
+            //cliente.enviarDatos("Bienvenido");
             bool gestionado;
             //Decidimos si crea o se une
             do
@@ -102,13 +102,13 @@ namespace ServidorContador
                         try
                         {
                             //Leemos la sala a la que quiere entrar
-                            cliente.enviarDatos("Introduce la sala:");
+                            //cliente.enviarDatos("Introduce la sala:");
                             int sala = Convert.ToInt32(cliente.recibirDatos());
                             //Gestionamos que el cliente no haya podido entrar en la sala
                             if (!entrarSala(cliente, sala))
                             {
                                 Console.WriteLine($"El cliente {cliente.getIP()} no ha podido conectarse a la sala {sala}");
-                                cliente.enviarDatos("La sala a la que intentas entrar o existe o está llena.");
+                                //cliente.enviarDatos("La sala a la que intentas entrar o existe o está llena.");
                                 gestionado = false;
                             }
                         }
@@ -177,7 +177,6 @@ namespace ServidorContador
                 }
                 partida.BarajasJugadores.Add(cl.Key, baraja);
                 nombresJugadores.Add(cl.Key);
-                cl.Value.enviarDatos($"Tu nombre es: {cl.Key}\n");
             }
             partida.Turno = nombresJugadores[0];
 
@@ -185,18 +184,25 @@ namespace ServidorContador
             {
                 foreach (var cl in sala.Clientes)
                 {
-                    cl.Value.enviarDatos($"Turno de: {partida.Turno}");
-                    cl.Value.enviarDatos($"Valor de mesa actual: {partida.ValorMesa}");
-                    cl.Value.enviarDatos($"Sentido de mesa actual: {partida.SentidoMesa}");
-                    cl.Value.enviarDatos($"Cantidad cartas: {partida.BarajasJugadores[cl.Key].Count}");
-                    cl.Value.enviarDatos("Jugadores activos");
+                    //Numero de cartas
+                    cl.Value.enviarDatos(partida.BarajasJugadores[cl.Key].Count.ToString());
+                    //Cartas
+                    foreach (var carta in partida.BarajasJugadores[cl.Key])
+                    {
+                        cl.Value.enviarCarta(carta);
+                    }
+                    //Valor de mesa
+                    cl.Value.enviarDatos(partida.ValorMesa.ToString());
+                    //Sentido Mesa
+                    cl.Value.enviarDatos(partida.SentidoMesa.ToString());
+                    //Turno de mesa
+                    cl.Value.enviarDatos(partida.Turno);
+                    //Jugadores con su número de cartas
+                    cl.Value.enviarDatos(partida.BarajasJugadores.Count.ToString());
                     foreach(var v in partida.BarajasJugadores)
                     {
-                        cl.Value.enviarDatos($"{v.Key} {v.Value.Count}");
-                    }
-                    foreach (var carta in partida.BarajasJugadores[cl.Key]) {
-                        cl.Value.enviarCarta(carta);
-                        cl.Value.enviarDatos("-------------");
+                        cl.Value.enviarDatos(v.Key);
+                        cl.Value.enviarDatos(v.Value.Count.ToString());
                     }
                 }
                 Carta cartaJugada = null;
