@@ -44,9 +44,15 @@
     <Compile Include="Boton.cs" />
     <Compile Include="Carta.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="Pantalla.cs" />
+    <Compile Include="PantallaUnir.cs" />
+    <Compile Include="PantallaCrear.cs" />
+    <Compile Include="PantallaInicio.cs" />
     <Compile Include="PaqueteTurno.cs" />
+    <Compile Include="Partida.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SalaEspera.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

@@ -5,9 +5,11 @@
 * Creación de clases **Sala** y **Cliente** en **ServidorContador**.
 * Desarrollo de gestión de clientes: creación y unión a salas.
 * Ampliación de las clases **Sala** y **Cliente^**. Gestión de la clase sala mediante hilos.
+***
 ## 20/03/2020
 #### Nuevo
 * Redacción del anteproyecto.
+***
 ## 21/03/2020
 #### Modificaciones
 * Corrección del diagrama de Gantt.
@@ -15,10 +17,12 @@
 * Pruebas de dibujado con MonoGame.
 * Creación de la clase **Carta**.
 * Creación de sprites de la baraja de cartas.
+***
 ## 22/03/2020
 #### Nuevo
 * Conseguida disposición del contenido  de la mesa de cartas de cada usuario.
 * Redimensión del contenido en función de las dimensiones de la ventana.
+***
 ## 23/03/2020
 #### Nuevo
 * Dibujado del valor, sentido, turno y marcadores de la partida.
@@ -27,6 +31,7 @@
 #### Modificaciones
 * Los datos como nº de jugadores por partida, turno, valor de mesa y cartas de cada jugador se pasan como único objeto de clase **PaqueteTurno**, que es enviado a cada jugador después de cada turno.
 * Existe duplicada la clase **Carta** en ambos proyectos ya que es necesaria en ambos. Se plantea la creación de una librería de clases en caso de necesitar más clases compartidas. Para una sola tan simple, se ha dejado duplicada.
+***
 ## 25/03/2020
 #### Nuevo
 * Creación de la clase **Partida** que contendrá los datos de una partida, como el *valor de mesa*, *sentido* del contador, *jugadores* de la sala, *turno* del jugador actual y *límite* que alcanza el contador.
@@ -37,14 +42,17 @@
 #### Modificaciones
 * La lista de clientes de la clase **Sala** pasa a ser un *Diccionario* para mayor facilidad a la hora de encontrar jugadores e información sobre ellos.
 * **Carta Efecto** modificada. Ya no suma tantas cartas como jugadores existan en ese momento. Haciendo cálculos, la estadística apunta a que el juego se extenderá mucho en caso de que se sumen tantas cartas a los jugadores, por lo que se reducen a 2.
+***
 ## 27/03/2020
 #### Nuevo
 * Creación de la clase **Boton** en el proyecto **Cliente** para la interacción con las cartas por parte del jugador.
 * La resolución de posibles errores son anotados en github para resolverlos al finalizar el proyecto.
 * Conseguido el funcionamiento básico del servidor. Permite partidas simples por consola.
+***
 ## 28/03/2020
 #### Avances
 * Colocación de los elementos visuales en el cliente y recepción del con click en los botones necesarios.
+***
 ## 29/03/2020
 #### Nuevo
 * Creación de la función **actualizarDatos()** en el juego del proyecto **Cliente** que servirá para intercambiar información entre cada turno de la partida.
@@ -53,3 +61,20 @@
 * Comprobación de clicks sobre botones mejorada, comprueba si hace un *press* y un *release*.
 * Comprobación de si es el turno del cliente para poder gestionar los clicks.
 * Básicamente, hoy ha sido enlazar la comunicación cliente-servidor.
+***
+## 31/03/2020
+#### Nuevo
+* Creación de las siguientes clases en el proyecto **Cliente**:
+    * PantallaCrear
+    * PantallaInicio
+    * PantallaUnir
+    * SalaEspera
+    * Partida
+* Creación de la interfaz **Pantalla**.
+* Distribución genérica de los elementos de las pantallas inicio, crear, unirse y sala de espera para futuras pruebas.
+* Introduzcción de la función **IntroducirTexto()** en **Game1** para probar la introducción de texto por teclado en MonoGame.
+* Creación de los sprites de botones que forman la interfaz de los menús.
+#### Modificaciones
+* El constructor de la clase **Boton** ha sido modificado. Además, ahora guarda el vector **Escala** para poder dibujar con mayor sencillez.
+* Traslado del código de **Game1** a su correspondiente clase **Partida**.
+* Desde **Game1** se gestionará en todo momento un objeto de tipo **Pantalla** que se irá reinicializando en función.
