@@ -19,6 +19,13 @@
 /processorParam:DebugMode=Auto
 /build:File.fx
 
+#begin Fuentes/Error.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fuentes/Error.spritefont
+
 #begin Fuentes/File.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor

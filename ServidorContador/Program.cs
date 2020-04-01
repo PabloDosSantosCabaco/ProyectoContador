@@ -50,10 +50,11 @@ namespace ServidorContador
         public void crearSala(Cliente cliente)
         {
             string nombre;
-            cliente.enviarDatos("Escribe tu nombre:");
             nombre=cliente.recibirDatos();
+            Console.WriteLine("Mi cliente se llama " + nombre);
             //Creo la nueva sala
             Sala sala = new Sala(contadorSalas,nombre,cliente);
+            Console.WriteLine("Devuelvo el numero de sala: "+contadorSalas);
             cliente.enviarDatos(contadorSalas.ToString());
             //Aumento el identificador para evitar repetir salas
             contadorSalas++;
@@ -72,7 +73,14 @@ namespace ServidorContador
                 //El cliente entra en la sala
                 lock (salas.GetValueOrDefault(sala)) {
                     salas.GetValueOrDefault(sala).addCliente(nombre,cliente);
-                    //cliente.enviarDatos($"Cliente añadido a la sala {sala}");
+                    foreach(var client in salas.GetValueOrDefault(sala).Clientes)
+                    {
+                        client.Value.enviarDatos(salas.GetValueOrDefault(sala).Clientes.Count.ToString());
+                        foreach(var nombreJugador in salas.GetValueOrDefault(sala).Clientes)
+                        {
+                            client.Value.enviarDatos(nombreJugador.Key);
+                        }
+                    }
                 }
                 return true;
             }

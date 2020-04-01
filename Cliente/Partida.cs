@@ -77,7 +77,7 @@ namespace Cliente
             {
                 try
                 {
-                    client = new TcpClient("127.0.0.1", 31416);
+                    client = new TcpClient("127.0.0.1", i);
                     conectado = true;
                     ns = client.GetStream();
                     sr = new StreamReader(ns);

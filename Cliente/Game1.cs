@@ -37,7 +37,7 @@ namespace Cliente
             //Volvemos visible el puntero
             Window.TextInput += IntroducirTexto;
             this.IsMouseVisible = true;
-            p = new SalaEspera(this,0);
+            p = new PantallaInicio(this);
             p.Initialize();
 
             //Valores marcadores
@@ -100,7 +100,7 @@ namespace Cliente
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.LightGray);
 
             // TODO: Add your drawing code here
             p.Draw(gameTime);

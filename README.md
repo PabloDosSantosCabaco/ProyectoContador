@@ -11,12 +11,12 @@
 * Redacción del anteproyecto.
 ***
 ## 21/03/2020
-#### Modificaciones
-* Corrección del diagrama de Gantt.
 #### Nuevo
 * Pruebas de dibujado con MonoGame.
 * Creación de la clase **Carta**.
 * Creación de sprites de la baraja de cartas.
+#### Modificaciones
+* Corrección del diagrama de Gantt.
 ***
 ## 22/03/2020
 #### Nuevo
@@ -28,7 +28,7 @@
 * Dibujado del valor, sentido, turno y marcadores de la partida.
 * Gestión mediante hilos de las diferentes partidas.
 * Creación de fuentes para escribir en MonoGame.
-#### Modificaciones
+#### Avances
 * Los datos como nº de jugadores por partida, turno, valor de mesa y cartas de cada jugador se pasan como único objeto de clase **PaqueteTurno**, que es enviado a cada jugador después de cada turno.
 * Existe duplicada la clase **Carta** en ambos proyectos ya que es necesaria en ambos. Se plantea la creación de una librería de clases en caso de necesitar más clases compartidas. Para una sola tan simple, se ha dejado duplicada.
 ***
@@ -57,7 +57,7 @@
 #### Nuevo
 * Creación de la función **actualizarDatos()** en el juego del proyecto **Cliente** que servirá para intercambiar información entre cada turno de la partida.
 * Primera prueba de juego entre cliente y servidor a través de interfaz gráfica con éxito.
-#### Modificaciones
+#### Avances
 * Comprobación de clicks sobre botones mejorada, comprueba si hace un *press* y un *release*.
 * Comprobación de si es el turno del cliente para poder gestionar los clicks.
 * Básicamente, hoy ha sido enlazar la comunicación cliente-servidor.
@@ -72,9 +72,19 @@
     * Partida
 * Creación de la interfaz **Pantalla**.
 * Distribución genérica de los elementos de las pantallas inicio, crear, unirse y sala de espera para futuras pruebas.
-* Introduzcción de la función **IntroducirTexto()** en **Game1** para probar la introducción de texto por teclado en MonoGame.
+* Introduzcción de la función `IntroducirTexto()` en **Game1** para probar la introducción de texto por teclado en MonoGame.
 * Creación de los sprites de botones que forman la interfaz de los menús.
 #### Modificaciones
 * El constructor de la clase **Boton** ha sido modificado. Además, ahora guarda el vector **Escala** para poder dibujar con mayor sencillez.
 * Traslado del código de **Game1** a su correspondiente clase **Partida**.
 * Desde **Game1** se gestionará en todo momento un objeto de tipo **Pantalla** que se irá reinicializando en función.
+***
+## 01/04/2020
+#### Nuevo
+* Creación de la clase **Servidor** en el proyecto **Cliente**.
+#### Modificaciones
+* Cambios menores sobre dónde se inicializan algunas variables (*Constructor* vs `Initialize()`).
+* Eliminación de líneas de depuración en el servidor y el cliente.
+#### Avances
+* Clase **PantallaCrear** finalizada y operativa. Permite la introducción de un nombre y la creación de una sala en la que esperar jugadores para iniciar la partida.
+* Clase **SalaEspera** actualizable ante la llegada de nuevos jugadores. Muestra los nuevos clientes en la sala a tiempo real.
