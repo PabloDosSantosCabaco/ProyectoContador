@@ -252,8 +252,8 @@ namespace Cliente
         }
         public void dibujarBotones()
         {
-            juego.spriteBatch.Draw(jugar.Imagen, position: new Vector2(anchoPantalla / 2 - jugar.Ancho, altoPantalla / 2), scale: jugar.Escala);
-            juego.spriteBatch.Draw(pasar.Imagen, position: new Vector2(anchoPantalla / 2, altoPantalla / 2), scale: pasar.Escala);
+            juego.spriteBatch.Draw(jugar.Img, position: new Vector2(anchoPantalla / 2 - jugar.Width, altoPantalla / 2), scale: jugar.Scale);
+            juego.spriteBatch.Draw(pasar.Img, position: new Vector2(anchoPantalla / 2, altoPantalla / 2), scale: pasar.Scale);
         }
         public void dibujarCartas()
         {
@@ -263,7 +263,7 @@ namespace Cliente
             foreach (Boton btn in cartasBtn)
             {
                 //Dibujamos la carta
-                juego.spriteBatch.Draw(btn.Imagen, position: new Vector2(btn.X, btn.Y), scale: btn.Escala);
+                juego.spriteBatch.Draw(btn.Img, position: new Vector2(btn.X, btn.Y), scale: btn.Scale);
             }
         }
         public void dibujarMesa()

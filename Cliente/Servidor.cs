@@ -40,7 +40,7 @@ namespace Cliente
             sw.WriteLine(info);
             sw.Flush();
         }
-        public string recibirDatos()
+        public string getData()
         {
             return sr.ReadLine();
         }

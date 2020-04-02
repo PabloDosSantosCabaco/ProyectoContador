@@ -88,3 +88,12 @@
 #### Avances
 * Clase **PantallaCrear** finalizada y operativa. Permite la introducción de un nombre y la creación de una sala en la que esperar jugadores para iniciar la partida.
 * Clase **SalaEspera** actualizable ante la llegada de nuevos jugadores. Muestra los nuevos clientes en la sala a tiempo real.
+***
+## 02/04/2020
+#### Nuevo
+* Creación clase **TextBox** que hereda de **Boton** para mayor facilidad a la hora manejar datos aportados por el usuario.
+* Clase **Boton** cuenta con una función `draw(Game1 game)`que se encarga del dibujado de los objetos de tipo **Boton**.
+#### Modificaciones
+* Las cajas de texto, antes **Boton** y ahora **TextBox**, remarcan con un borde verde para indicar el focus sobre ellas.
+* Uso de la función `draw(Game1 game)` en todos aquellos lugares donde se dibujaban botones manualmente.
+* Comienzo de traducir todos los nombres de variables y funciones del español al inglés.

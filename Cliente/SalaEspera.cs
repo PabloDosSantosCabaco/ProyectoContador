@@ -12,56 +12,56 @@ namespace Cliente
 {
     class SalaEspera : Pantalla
     {
-        Game1 juego;
-        Servidor servidor;
+        Game1 game;
+        Servidor server;
 
-        Texture2D imgEmpezar;
-        Boton btnEmpezar;
+        Texture2D imgStart;
+        Boton btnStart;
         bool host;
-        bool salaEsperaActiva;
-        string nombre;
-        string sala = "Numero de sala:";
-        List<string> jugadores = new List<string>();
-        SpriteFont fuente;
-        public int AnchoPantalla { get; set; }
-        public int AltoPantalla { get; set; }
-        int numSala;
+        bool waitingRoomActive;
+        string name;
+        string room = "Numero de sala:";
+        List<string> players = new List<string>();
+        SpriteFont font;
+        public int ScreenWidth { get; set; }
+        public int ScreenHeight { get; set; }
+        int numberRoom;
         
-        public SalaEspera(Game1 juego,int numSala,string nombre,Servidor servidor,bool host)
+        public SalaEspera(Game1 game,int numberRoom,string name,Servidor server,bool host)
         {
-            this.juego = juego;
-            this.numSala = numSala;
-            this.nombre = nombre;
-            this.servidor = servidor;
+            this.game = game;
+            this.numberRoom = numberRoom;
+            this.name = name;
+            this.server = server;
             this.host = host;
-            salaEsperaActiva = true;
-            jugadores.Add(nombre);
-            Thread hiloRecibirJugadores = new Thread(() => recibirJugadores());
-            hiloRecibirJugadores.Start();
+            waitingRoomActive = true;
+            players.Add(name);
+            Thread getNewPlayersThread = new Thread(() => getNewPlayers());
+            getNewPlayersThread.Start();
         }
-        public void recibirJugadores()
+        public void getNewPlayers()
         {
-            while (salaEsperaActiva)
+            while (waitingRoomActive)
             {
-                int numJug = Convert.ToInt32(servidor.recibirDatos());
-                jugadores.Clear();
-                for (int i = 0; i < numJug; i++)
+                int playerNum = Convert.ToInt32(server.getData());
+                players.Clear();
+                for (int i = 0; i < playerNum; i++)
                 {
-                    jugadores.Add(servidor.recibirDatos());
+                    players.Add(server.getData());
                 }
             }
         }
         public void Draw(GameTime gameTime)
         {
-            juego.spriteBatch.Begin();
-            juego.spriteBatch.DrawString(fuente, sala+" "+numSala, new Vector2(AnchoPantalla / 2 - fuente.MeasureString(sala + " " + numSala).X/2, AltoPantalla / 8), Color.Black);
+            game.spriteBatch.Begin();
+            game.spriteBatch.DrawString(font, room+" "+numberRoom, new Vector2(ScreenWidth / 2 - font.MeasureString(room + " " + numberRoom).X/2, ScreenHeight / 8), Color.Black);
             int fila = 1;
-            for (int i=0; i<jugadores.Count; i++)
+            for (int i=0; i<players.Count; i++)
             {
-                juego.spriteBatch.DrawString(fuente, jugadores[i],
+                game.spriteBatch.DrawString(font, players[i],
                     new Vector2(
-                        (i % 2) == 0 ? (float)AnchoPantalla / 4 - fuente.MeasureString(jugadores[i]).X/2 : (float)AnchoPantalla*3 / 4 - fuente.MeasureString(jugadores[i]).X/2, 
-                        (float)AltoPantalla *2/ 5 +AnchoPantalla*fila/15), 
+                        (i % 2) == 0 ? (float)ScreenWidth / 4 - font.MeasureString(players[i]).X/2 : (float)ScreenWidth*3 / 4 - font.MeasureString(players[i]).X/2, 
+                        (float)ScreenHeight *2/ 5 +ScreenWidth*fila/15), 
                     Color.Black);
                 if ((i+1) % 2 == 0)
                 {
@@ -70,28 +70,24 @@ namespace Cliente
             }
             if (host)
             {
-                juego.spriteBatch.Draw(
-                    btnEmpezar.Imagen,
-                    position: new Vector2(btnEmpezar.X, btnEmpezar.Y),
-                    scale: btnEmpezar.Escala
-                    );
+                btnStart.draw(game);
             }
-            juego.spriteBatch.End();
+            game.spriteBatch.End();
         }
 
         public void Initialize()
         {
-            AnchoPantalla = juego.graphics.GraphicsDevice.Viewport.Width;
-            AltoPantalla = juego.graphics.GraphicsDevice.Viewport.Height;
+            ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
+            ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
         }
 
         public void LoadContent()
         {
-            fuente = juego.Content.Load<SpriteFont>("Fuentes/Intro");
+            font = game.Content.Load<SpriteFont>("Fuentes/Intro");
             if (host)
             {
-                imgEmpezar = juego.Content.Load<Texture2D>("Sprites/btnEmpezar");
-                btnEmpezar = new Boton(AnchoPantalla / 2 - AnchoPantalla / 4 / 2, AltoPantalla * 4 / 5, imgEmpezar, AnchoPantalla / 4);
+                imgStart = game.Content.Load<Texture2D>("Sprites/btnEmpezar");
+                btnStart = new Boton(ScreenWidth / 2 - ScreenWidth / 4 / 2, ScreenHeight * 4 / 5, imgStart, ScreenWidth / 4);
             }
         }
 
