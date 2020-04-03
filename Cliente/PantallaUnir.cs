@@ -12,21 +12,26 @@ namespace Cliente
     class PantallaUnir : Pantalla
     {
         Game1 game;
-        Texture2D imgBack;
         Boton btnBack;
         Texture2D input;
         Texture2D inputSelected;
         TextBox txtInputRoom;
         TextBox txtInputName;
         TextBox focused;
+        Boton btnStart;
+        bool errorSala;
+        bool errorNombre;
+        string errorRoomMsg;
+        string errorNameMsg;
         bool mouseClick;
         List<TextBox> inputs = new List<TextBox>();
         Dictionary<Keys, bool> keys = new Dictionary<Keys, bool>();
 
-        string intro = "Introduce tu nombre:";
-        string roomIntro = "Introduce el numero de sala:";
+        string intro = "Introduce el numero de sala:";
+        string roomIntro = "Introduce tu nombre:";
         SpriteFont font;
         SpriteFont inputFont;
+        SpriteFont errorFont;
         public int ScreenWidth { get; set; }
         public int ScreenHeight { get; set; }
         public PantallaUnir(Game1 game)
@@ -50,7 +55,16 @@ namespace Cliente
                 new Vector2(ScreenWidth / 2 - font.MeasureString(roomIntro).X / 2, ScreenHeight/2-font.MeasureString(roomIntro).Y), 
                 Color.Black
             );
+            if (errorNombre)
+            {
+                game.spriteBatch.DrawString(errorFont, errorNameMsg, new Vector2(ScreenWidth / 2 - errorFont.MeasureString(errorNameMsg).X/2, ScreenHeight * 15/20), Color.Red);
+            }
+            if (errorSala)
+            {
+                game.spriteBatch.DrawString(errorFont, errorRoomMsg, new Vector2(ScreenWidth / 2 - errorFont.MeasureString(errorRoomMsg).X / 2, ScreenHeight * 7/20), Color.Red);
+            }
             txtInputName.draw(game);
+            btnStart.draw(game);
             game.spriteBatch.End();
         }
 
@@ -59,21 +73,27 @@ namespace Cliente
             ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             mouseClick = false;
+            errorSala = false;
+            errorNombre = false;
+            errorRoomMsg = "Invalid room.";
+            errorNameMsg = "This name is too short or is already in use.";
         }
 
         public void LoadContent()
         {
-            imgBack = game.Content.Load<Texture2D>("Sprites/btnBack");
-            btnBack = new Boton(0, 0, imgBack, ScreenWidth / 12);
+            btnStart = new Boton(ScreenWidth/2-ScreenWidth/8,ScreenHeight*17/20, game.Content.Load<Texture2D>("Sprites/btnUnir"), ScreenWidth/ 4);
+            btnBack = new Boton(0, 0, game.Content.Load<Texture2D>("Sprites/btnBack"), ScreenWidth / 12);
             input = game.Content.Load<Texture2D>("Sprites/textBox");
             inputSelected = game.Content.Load<Texture2D>("Sprites/textBoxSelected");
             font = game.Content.Load<SpriteFont>("Fuentes/Intro");
             inputFont = game.Content.Load<SpriteFont>("Fuentes/FuenteValor");
-            txtInputRoom = new TextBox(ScreenWidth / 2 - ScreenWidth * 3 / 8, ScreenHeight * 4 / 10 - input.Height, inputSelected, input, ScreenWidth * 3 / 4, inputFont, true);
+            txtInputRoom = new TextBox(ScreenWidth / 2 - ScreenWidth * 3 / 8, ScreenHeight * 7 / 20 - input.Height, inputSelected, input, ScreenWidth * 3 / 4, inputFont, true);
             focused = txtInputRoom;
-            txtInputName = new TextBox(ScreenWidth / 2 - ScreenWidth * 3 / 8, ScreenHeight * 8 / 10 - input.Height, inputSelected, input, ScreenWidth * 3 / 4, inputFont, false);
+            txtInputName = new TextBox(ScreenWidth / 2 - ScreenWidth * 3 / 8, ScreenHeight * 15 / 20 - input.Height, inputSelected, input, ScreenWidth * 3 / 4, inputFont, false);
             inputs.Add(txtInputName);
             inputs.Add(txtInputRoom);
+            errorFont = game.Content.Load<SpriteFont>("Fuentes/Error");
+            
         }
 
         public Pantalla Update(GameTime gameTime)
@@ -87,7 +107,10 @@ namespace Cliente
                         (Keyboard.GetState().GetPressedKeys()[i] >= Keys.D0 && Keyboard.GetState().GetPressedKeys()[i] <= Keys.D9) ||
                         (Keyboard.GetState().GetPressedKeys()[i] >= Keys.NumPad0 && Keyboard.GetState().GetPressedKeys()[i] <= Keys.NumPad9))
                     {
-                        focused.Text = compruebaNombre(Keyboard.GetState().GetPressedKeys()[i].ToString(),focused);
+                        if (focused != txtInputRoom || !(Keyboard.GetState().GetPressedKeys()[i] >= Keys.A && Keyboard.GetState().GetPressedKeys()[i] <= Keys.Z))
+                        {
+                            focused.Text = compruebaNombre(Keyboard.GetState().GetPressedKeys()[i].ToString(), focused);
+                        }
                     }
                     else if (Keyboard.GetState().GetPressedKeys()[i] == Keys.Space)
                     {
@@ -117,6 +140,40 @@ namespace Cliente
                 if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
                 {
                     return new PantallaInicio(game);
+                }
+                if(btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
+                {
+                    errorNombre = false;
+                    errorSala = false;
+                    if(txtInputName.Text.Length>=3 && txtInputRoom.Text.Length > 0)
+                    {
+                        //Mandar al servidor y comprobar que existe dicha sala pero dentro de ella no dicho nombre
+                        Servidor servidor = new Servidor();
+                        servidor.enviarDatos("join");
+                        servidor.enviarDatos(txtInputRoom.Text);
+                        servidor.enviarDatos(txtInputName.Text);
+                        switch (servidor.recibirDatos())
+                        {
+                            case "true":
+                                return new SalaEspera(game, Convert.ToInt32(txtInputRoom.Text), txtInputName.Text, servidor, false);
+                            case "errorNombre":
+                                errorSala = false;
+                                errorNombre = true;
+                                break;
+                            case "errorSala":
+                                errorNombre = false;
+                                errorSala = true;
+                                break;
+                        }
+                        servidor.closeServer();
+                    }
+                    if(txtInputName.Text.Length < 3)
+                    {
+                        errorNombre = true;
+                    }
+                    if(txtInputRoom.Text.Length<=0){
+                        errorSala = true;
+                    }
                 }
                 if (txtInputName.click(Mouse.GetState().X, Mouse.GetState().Y))
                 {

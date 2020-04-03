@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,13 @@ namespace Cliente
         Texture2D imgStart;
         Boton btnStart;
         bool host;
+        bool mouseClick;
         bool waitingRoomActive;
         string name;
-        string room = "Numero de sala:";
+        string room;
         List<string> players = new List<string>();
         SpriteFont font;
+        SpriteFont errorFont;
         public int ScreenWidth { get; set; }
         public int ScreenHeight { get; set; }
         int numberRoom;
@@ -43,11 +46,19 @@ namespace Cliente
         {
             while (waitingRoomActive)
             {
-                int playerNum = Convert.ToInt32(server.getData());
-                players.Clear();
-                for (int i = 0; i < playerNum; i++)
+                string frase = server.recibirDatos();
+                if (frase == "start")
                 {
-                    players.Add(server.getData());
+                    waitingRoomActive = false;
+                }
+                else if(frase =="players")
+                {
+                    int playerNum = Convert.ToInt32(server.recibirDatos());
+                    players.Clear();
+                    for (int i = 0; i < playerNum; i++)
+                    {
+                        players.Add(server.getData());
+                    }
                 }
             }
         }
@@ -79,6 +90,8 @@ namespace Cliente
         {
             ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
+            room = "Numero de sala:";
+            mouseClick = false;
         }
 
         public void LoadContent()
@@ -93,7 +106,22 @@ namespace Cliente
 
         public Pantalla Update(GameTime gameTime)
         {
-            
+            if (!waitingRoomActive)
+            {
+                return new Partida(game,server,name);
+            }
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+            {
+                mouseClick = true;
+            }
+            if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
+            {
+                if (host && btnStart.click(Mouse.GetState().X, Mouse.GetState().Y) && players.Count >= 2)
+                {
+                    server.enviarDatos("empezar");
+                }
+                mouseClick = false;
+            }
             return this;
         }
     }

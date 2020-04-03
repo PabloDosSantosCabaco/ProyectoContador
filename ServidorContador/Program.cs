@@ -72,9 +72,18 @@ namespace ServidorContador
                 string nombre = cliente.recibirDatos();
                 //El cliente entra en la sala
                 lock (salas.GetValueOrDefault(sala)) {
+                    if (salas.GetValueOrDefault(sala).Clientes.ContainsKey(nombre))
+                    {
+                        Console.WriteLine("Este nombre ya existe");
+                        cliente.enviarDatos("errorNombre");
+                        return false;
+                    }
                     salas.GetValueOrDefault(sala).addCliente(nombre,cliente);
+                    Console.WriteLine($"El cliente {nombre} ha entrado en la sala");
+                    cliente.enviarDatos("true");
                     foreach(var client in salas.GetValueOrDefault(sala).Clientes)
                     {
+                        client.Value.enviarDatos("players");
                         client.Value.enviarDatos(salas.GetValueOrDefault(sala).Clientes.Count.ToString());
                         foreach(var nombreJugador in salas.GetValueOrDefault(sala).Clientes)
                         {
@@ -86,11 +95,14 @@ namespace ServidorContador
             }
             else
             {
+                Console.WriteLine($"La sala {sala} no existe");
+                cliente.enviarDatos("errorSala");
                 return false;
             }
         }
         public void gestionCliente(Socket socket)
         {
+            Console.WriteLine("Ha entrado un cliente");
             Cliente cliente = new Cliente(socket);
             //cliente.enviarDatos("Bienvenido");
             bool gestionado;
@@ -132,6 +144,7 @@ namespace ServidorContador
                         break;
                 }
             } while (!gestionado);
+            Console.WriteLine("Se ha ido un cliente");
         }
         public void salaEspera(Sala sala)
         {
@@ -148,18 +161,21 @@ namespace ServidorContador
                 string res = host.recibirDatos();
                 switch (res) {
                     case "empezar":
-                    lock (sala)
-                    {
-                        if (sala.Clientes.Count >= 2)
+                        lock (sala)
                         {
-                            host.enviarDatos("Empieza el juego");
-                            sala.Empezado = true;
+                            if (sala.Clientes.Count >= 2)
+                            {
+                                foreach(Cliente client in sala.Clientes.Values)
+                                {
+                                    client.enviarDatos("start");
+                                }
+                                sala.Empezado = true;
+                            }
+                            else
+                            {
+                                host.enviarDatos("error");
+                            }
                         }
-                        else
-                        {
-                            host.enviarDatos("Todavia no Empieza el juego");
-                        }
-                    }
                         break;
                     case "cant":
                         host.enviarDatos(sala.Clientes.Count+"");
@@ -175,7 +191,7 @@ namespace ServidorContador
             PaqueteTurno paquete;
             List<string> nombresJugadores = new List<string>();
             bool partidaAcabada = false;
-
+            Console.WriteLine("Generando info");
             foreach(var cl in sala.Clientes)
             {
                 List<Carta> baraja = new List<Carta>();
@@ -192,6 +208,7 @@ namespace ServidorContador
             {
                 foreach (var cl in sala.Clientes)
                 {
+                    Console.WriteLine("Envio el numero de cartas");
                     //Numero de cartas
                     cl.Value.enviarDatos(partida.BarajasJugadores[cl.Key].Count.ToString());
                     //Cartas

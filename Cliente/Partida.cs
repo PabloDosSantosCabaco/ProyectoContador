@@ -14,211 +14,191 @@ namespace Cliente
 {
     class Partida : Pantalla
     {
+        Game1 game;
+        Servidor server;
 
-        TcpClient client;
-        NetworkStream ns;
-        StreamWriter sw;
-        StreamReader sr;
         Thread hiloConectividad;
-        string miNombre;
-        bool ratonPresionado;
-        bool conectado = false;
+        string name;
+        bool mouseClick;
 
         //Imagenes cartas
         Dictionary<string, Texture2D> cartas = new Dictionary<string, Texture2D>();
         //Cartas jugador
         List<Boton> cartasBtn = new List<Boton>();
         //Boton jugar y botón pasar
-        Boton jugar;
-        Boton pasar;
-        Texture2D btnJugarImg;
-        Texture2D btnPasarImg;
-        int cartaSeleccionada;
+        Boton btnPlay;
+        Boton btnPass;
+        Texture2D imgBtnPlay;
+        Texture2D imgBtnPass;
+        int selectedCard;
         //Definen el ancho y alto de la ventana
-        float anchoPantalla;
-        float altoPantalla;
+        public float ScreenWidth { get; set; }
+        public float ScreenHeight { get; set; }
         //Define el ancho que tendrá cada columna contenedora de una carta
-        float columna;
+        float column;
 
         //Vector que define la posición del valor de mesa
-        SpriteFont fuente;
-        SpriteFont fuenteValor;
+        SpriteFont font;
+        SpriteFont fontValue;
 
         //Maximo numero de cartas que se muestran a la vez
-        int maxCartas = 8;
-        PaqueteTurno datos;
+        int maxCards = 8;
+        PaqueteTurno data;
 
         //Determina si el jugador ha acabado
-        bool terminar;
+        bool finish;
         //Texture2D que nos permite tener siempre acceso a una carta
-        Texture2D cartaEjemplo;
+        Texture2D exampleCard;
         //Vectores que definen la posicion y reescalado de las cartas del jugador
-        Vector2 posicionCartas;
-        Game1 juego;
-        public Partida(Game1 juego)
+        Vector2 cardPosition;
+        public Partida(Game1 game,Servidor server,string name)
         {
-            this.juego = juego;
+            this.game = game;
+            this.server = server;
+            this.name = name;
         }
 
         public void Draw(GameTime gameTime)
         {
-            juego.spriteBatch.Begin();
+            game.spriteBatch.Begin();
             dibujarMesa();
             dibujarMarcadores();
             dibujarTurno();
             dibujarBotones();
             dibujarCartas();
-            juego.spriteBatch.End();
+            game.spriteBatch.End();
         }   
 
         public void Initialize()
         {
-            for (int i = 31416; i < 31420; i++)
-            {
-                try
-                {
-                    client = new TcpClient("127.0.0.1", i);
-                    conectado = true;
-                    ns = client.GetStream();
-                    sr = new StreamReader(ns);
-                    sw = new StreamWriter(ns);
-                    sw.WriteLine("join");
-                    sw.Flush();
-                    sw.WriteLine("0");
-                    sw.Flush();
-                    miNombre = "Kenny";
-                    sw.WriteLine(miNombre);
-                    sw.Flush();
-                    break;
-                }
-                catch (SocketException ex)
-                {
-
-                }
-            }
-            if (conectado)
-            {
-                cartaSeleccionada = -1;
-                actualizarDatos();
-                hiloConectividad = new Thread(() => comprobarTurno());
-                hiloConectividad.Start();
-                //Al empezar el jugador está jugando
-                terminar = false;
+            selectedCard = -1;
+            actualizarDatos();
+            hiloConectividad = new Thread(() => comprobarTurno());
+            hiloConectividad.Start();
+            //Al empezar el jugador está jugando
+            finish = false;
                 
-                //Permitimos ver el cursor en la centana
-                //Window.AllowUserResizing = true;
-                altoPantalla = juego.graphics.GraphicsDevice.Viewport.Height;
-                anchoPantalla = juego.graphics.GraphicsDevice.Viewport.Width;
-                columna = anchoPantalla / maxCartas;
-                ratonPresionado = false;
-            }
-            
+            //Permitimos ver el cursor en la centana
+            //Window.AllowUserResizing = true;
+            ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
+            ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
+            column = ScreenWidth / maxCards;
+            mouseClick = false;
         }
 
         public void LoadContent()
         {
-            if (conectado)
+            for (int i = 3; i < 8; i++)
             {
-                for (int i = 3; i < 8; i++)
-                {
-                    cartas.Add(i.ToString(), juego.Content.Load<Texture2D>("Sprites/" + i));
-                }
-                cartas.Add("bucle", juego.Content.Load<Texture2D>("Sprites/bucle"));
-                cartas.Add("minus", juego.Content.Load<Texture2D>("Sprites/minus"));
-                cartas.Add("plus", juego.Content.Load<Texture2D>("Sprites/plus"));
-                //Cargamos la fuente del juego
-                fuente = juego.Content.Load<SpriteFont>("Fuentes/Fuente");
-                fuenteValor = juego.Content.Load<SpriteFont>("Fuentes/FuenteValor");
-                cartaEjemplo = cartas["3"];
-
-                btnJugarImg = juego.Content.Load<Texture2D>("Sprites/btnJugar");
-                btnPasarImg = juego.Content.Load<Texture2D>("Sprites/btnPasar");
-                actualizarBaraja();
-                jugar = new Boton(anchoPantalla / 2 - anchoPantalla / 8, altoPantalla / 2, btnJugarImg, anchoPantalla / 8);
-                pasar = new Boton(anchoPantalla / 2, altoPantalla / 2, btnPasarImg, anchoPantalla / 8);
+                cartas.Add(i.ToString(), game.Content.Load<Texture2D>("Sprites/" + i));
             }
+            cartas.Add("bucle", game.Content.Load<Texture2D>("Sprites/bucle"));
+            cartas.Add("minus", game.Content.Load<Texture2D>("Sprites/minus"));
+            cartas.Add("plus", game.Content.Load<Texture2D>("Sprites/plus"));
+            //Cargamos la fuente del juego
+            font = game.Content.Load<SpriteFont>("Fuentes/Fuente");
+            fontValue = game.Content.Load<SpriteFont>("Fuentes/FuenteValor");
+            exampleCard = cartas["3"];
+
+            imgBtnPlay = game.Content.Load<Texture2D>("Sprites/btnJugar");
+            imgBtnPass = game.Content.Load<Texture2D>("Sprites/btnPasar");
+            actualizarBaraja();
+            btnPlay = new Boton(ScreenWidth / 2 - ScreenWidth / 8, ScreenHeight / 2, imgBtnPlay, ScreenWidth / 8);
+            btnPass = new Boton(ScreenWidth / 2, ScreenHeight / 2, imgBtnPass, ScreenWidth / 8);
         }
 
         public Pantalla Update(GameTime gameTime)
         {
-            if (conectado)
+            //Si la ventana del juego cambia sus dimensiones, se adaptan los tamaños de los objetos
+            if (game.graphics.GraphicsDevice.Viewport.Width != ScreenWidth || game.graphics.GraphicsDevice.Viewport.Height != ScreenHeight)
             {
-                //Si la ventana del juego cambia sus dimensiones, se adaptan los tamaños de los objetos
-                if (juego.graphics.GraphicsDevice.Viewport.Width != anchoPantalla || juego.graphics.GraphicsDevice.Viewport.Height != altoPantalla)
+                ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
+                ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
+                column = ScreenWidth / maxCards;
+            }
+            //Para cada carta del jugador, se carga su correspondiente imagen
+            actualizarBaraja();
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+            {
+                mouseClick = true;
+            }
+            if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
+            {
+                if (data.Turno == name)
                 {
-                    altoPantalla = juego.graphics.GraphicsDevice.Viewport.Height;
-                    anchoPantalla = juego.graphics.GraphicsDevice.Viewport.Width;
-                    columna = anchoPantalla / maxCartas;
-                }
-                //Para cada carta del jugador, se carga su correspondiente imagen
-                actualizarBaraja();
-                if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-                {
-                    ratonPresionado = true;
-                }
-                if (ratonPresionado && Mouse.GetState().LeftButton == ButtonState.Released)
-                {
-                    if (datos.Turno == miNombre)
+                    if (btnPass.click(Mouse.GetState().X, Mouse.GetState().Y))
                     {
-                        if (pasar.click(Mouse.GetState().X, Mouse.GetState().Y))
-                        {
-                            sw.WriteLine("pasar");
-                            sw.Flush();
-                        }
-                        if (jugar.click(Mouse.GetState().X, Mouse.GetState().Y) && cartaSeleccionada != -1)
-                        {
-                            sw.WriteLine("jugar");
-                            sw.WriteLine(datos.Cartas[cartaSeleccionada].Tipo.ToString());
-                            sw.WriteLine(datos.Cartas[cartaSeleccionada].Valor.ToString());
-                            sw.WriteLine(datos.Cartas[cartaSeleccionada].Sentido.ToString());
-                            sw.Flush();
-                            cartaSeleccionada = -1;
-                        }
+                        server.enviarDatos("pasar");
+                        /*sw.WriteLine("pasar");
+                        sw.Flush();*/
                     }
-                    foreach (Boton btn in cartasBtn)
+                    if (btnPlay.click(Mouse.GetState().X, Mouse.GetState().Y) && selectedCard != -1)
                     {
-                        if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
-                        {
-                            cartaSeleccionada = cartasBtn.IndexOf(btn);
-                        }
+                        server.enviarDatos("jugar");
+                        server.enviarDatos(data.Cartas[selectedCard].Tipo.ToString());
+                        server.enviarDatos(data.Cartas[selectedCard].Valor.ToString());
+                        server.enviarDatos(data.Cartas[selectedCard].Sentido.ToString());
+                        /*
+                        sw.WriteLine("jugar");
+                        sw.WriteLine(data.Cartas[selectedCard].Tipo.ToString());
+                        sw.WriteLine(data.Cartas[selectedCard].Valor.ToString());
+                        sw.WriteLine(data.Cartas[selectedCard].Sentido.ToString());
+                        sw.Flush();
+                        */
+                        selectedCard = -1;
                     }
-                    ratonPresionado = false;
                 }
+                foreach (Boton btn in cartasBtn)
+                {
+                    if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
+                    {
+                        selectedCard = cartasBtn.IndexOf(btn);
+                    }
+                }
+                mouseClick = false;
             }
             return this;
         }
         public void comprobarTurno()
         {
-            while (conectado)
+            //Ojo cuidao
+            while (true)
             {
                 actualizarDatos();
             }
         }
         public void actualizarDatos()
         {
-            string aux = sr.ReadLine();
+            string aux = server.recibirDatos();// sr.ReadLine();
             Console.WriteLine(aux);
             int numCartas = Convert.ToInt32(aux);
             List<Carta> auxLista = new List<Carta>();
             for (int i = 0; i < numCartas; i++)
             {
-                auxLista.Add(new Carta((Carta.eTipo)Enum.Parse(typeof(Carta.eTipo), sr.ReadLine()), Convert.ToInt32(sr.ReadLine()), Convert.ToBoolean(sr.ReadLine())));
+                auxLista.Add(
+                    new Carta(
+                        (Carta.eTipo)Enum.Parse(typeof(Carta.eTipo), 
+                        server.recibirDatos()/* sr.ReadLine()*/), 
+                        Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/), 
+                        Convert.ToBoolean(server.recibirDatos()/* sr.ReadLine()*/)
+                        )
+                    );
             }
-            int auxValor = Convert.ToInt32(sr.ReadLine());
-            bool auxSentido = Convert.ToBoolean(sr.ReadLine());
-            string auxTurno = sr.ReadLine();
+            int auxValor = Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/);
+            bool auxSentido = Convert.ToBoolean(server.recibirDatos()/* sr.ReadLine()*/);
+            string auxTurno = server.recibirDatos()/* sr.ReadLine()*/;
             Dictionary<string, int> auxDic = new Dictionary<string, int>();
-            int numJugadores = Convert.ToInt32(sr.ReadLine());
+            int numJugadores = Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/);
             for (int i = 0; i < numJugadores; i++)
             {
-                auxDic.Add(sr.ReadLine(), Convert.ToInt32(sr.ReadLine()));
+                auxDic.Add(server.recibirDatos()/* sr.ReadLine()*/, Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/));
             }
-            datos = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
+            data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
         }
         public void actualizarBaraja()
         {
             cartasBtn.Clear();
-            foreach (Carta card in datos.Cartas)
+            foreach (Carta card in data.Cartas)
             {
                 string nombre = "";
                 switch (card.Tipo)
@@ -240,59 +220,59 @@ namespace Cliente
                         nombre = "bucle";
                         break;
                 }
-                cartasBtn.Add(new Boton(0, 0, cartas[nombre], columna * 8 / 10));
-                posicionCartas = new Vector2(columna / 10, altoPantalla / 2 + columna * 8 / 10 / 2);
+                cartasBtn.Add(new Boton(0, 0, cartas[nombre], column * 8 / 10));
+                cardPosition = new Vector2(column / 10, ScreenHeight / 2 + column * 8 / 10 / 2);
                 foreach (Boton btn in cartasBtn)
                 {
-                    btn.X = posicionCartas.X;
-                    btn.Y = posicionCartas.Y;
-                    posicionCartas.X += columna;
+                    btn.X = cardPosition.X;
+                    btn.Y = cardPosition.Y;
+                    cardPosition.X += column;
                 }
             }
         }
         public void dibujarBotones()
         {
-            juego.spriteBatch.Draw(jugar.Img, position: new Vector2(anchoPantalla / 2 - jugar.Width, altoPantalla / 2), scale: jugar.Scale);
-            juego.spriteBatch.Draw(pasar.Img, position: new Vector2(anchoPantalla / 2, altoPantalla / 2), scale: pasar.Scale);
+            game.spriteBatch.Draw(btnPlay.Img, position: new Vector2(ScreenWidth / 2 - btnPlay.Width, ScreenHeight / 2), scale: btnPlay.Scale);
+            game.spriteBatch.Draw(btnPass.Img, position: new Vector2(ScreenWidth / 2, ScreenHeight / 2), scale: btnPass.Scale);
         }
         public void dibujarCartas()
         {
             //Estableceemos donde empezarán a dibujarse 
-            posicionCartas = new Vector2(columna / 10, altoPantalla / 2 + columna * 8 / 10 / 2);
+            cardPosition = new Vector2(column / 10, ScreenHeight / 2 + column * 8 / 10 / 2);
             //Dibujado de las cartas
             foreach (Boton btn in cartasBtn)
             {
                 //Dibujamos la carta
-                juego.spriteBatch.Draw(btn.Img, position: new Vector2(btn.X, btn.Y), scale: btn.Scale);
+                game.spriteBatch.Draw(btn.Img, position: new Vector2(btn.X, btn.Y), scale: btn.Scale);
             }
         }
         public void dibujarMesa()
         {
             //Dibujamos el valor y sentido de mesa
-            juego.spriteBatch.DrawString(
-                fuenteValor,
-                datos.ValorMesa.ToString(),
-                new Vector2(anchoPantalla / 2, altoPantalla / 4) - fuenteValor.MeasureString(datos.ValorMesa.ToString()) / 2,
+            game.spriteBatch.DrawString(
+                fontValue,
+                data.ValorMesa.ToString(),
+                new Vector2(ScreenWidth / 2, ScreenHeight / 4) - fontValue.MeasureString(data.ValorMesa.ToString()) / 2,
                 Color.White
                 );
-            juego.spriteBatch.DrawString(
-                fuenteValor,
-                datos.Sentido ? "+" : "-",
-                new Vector2(anchoPantalla / 2, altoPantalla / 4) - fuenteValor.MeasureString(datos.ValorMesa.ToString()) / 2 - fuenteValor.MeasureString(datos.Sentido.ToString()),
+            game.spriteBatch.DrawString(
+                fontValue,
+                data.Sentido ? "+" : "-",
+                new Vector2(ScreenWidth / 2, ScreenHeight / 4) - fontValue.MeasureString(data.ValorMesa.ToString()) / 2 - fontValue.MeasureString(data.Sentido.ToString()),
                 Color.White);
         }
         public void dibujarTurno()
         {
-            Vector2 posicionTurno = new Vector2(anchoPantalla - fuente.MeasureString("Turno: " + datos.Turno).X, 0);
-            juego.spriteBatch.DrawString(fuente, "Turno: " + datos.Turno, posicionTurno, Color.White);
+            Vector2 posicionTurno = new Vector2(ScreenWidth - font.MeasureString("Turno: " + data.Turno).X, 0);
+            game.spriteBatch.DrawString(font, "Turno: " + data.Turno, posicionTurno, Color.White);
         }
         public void dibujarMarcadores()
         {
-            Vector2 posicionMarcador = new Vector2(columna / 10, columna / 10);
-            foreach (var jugador in datos.Jugadores)
+            Vector2 posicionMarcador = new Vector2(column / 10, column / 10);
+            foreach (var jugador in data.Jugadores)
             {
-                juego.spriteBatch.DrawString(fuente, jugador.Key + ": " + jugador.Value, posicionMarcador, Color.White);
-                posicionMarcador.Y += fuente.MeasureString(jugador.Key + ": " + jugador.Value).Y;
+                game.spriteBatch.DrawString(font, jugador.Key + ": " + jugador.Value, posicionMarcador, Color.White);
+                posicionMarcador.Y += font.MeasureString(jugador.Key + ": " + jugador.Value).Y;
             }
         }
     }

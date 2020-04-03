@@ -97,3 +97,11 @@
 * Las cajas de texto, antes **Boton** y ahora **TextBox**, remarcan con un borde verde para indicar el focus sobre ellas.
 * Uso de la función `draw(Game1 game)` en todos aquellos lugares donde se dibujaban botones manualmente.
 * Comienzo de traducir todos los nombres de variables y funciones del español al inglés.
+***
+## 03/04/2020
+#### Modificaciones
+* El campo de introducción de sala al unirse solo acepta valores númericos.
+* Cambios en el constructor de la clase **Partida** que permite suprimir numerosas variables innecesarias.
+#### Avances
+* Sala de espera funcional. Permite el comienzo de partidas.
+* Las partidas son ya posibles de forma tosca y sencilla. No contempla la posibilidad de que un jugador termine la partida.

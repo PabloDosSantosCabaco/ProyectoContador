@@ -54,7 +54,6 @@ namespace Cliente
                 );
 
             }
-            
             game.spriteBatch.End();
         }
 
@@ -89,7 +88,9 @@ namespace Cliente
             {
                 if (!keys.ContainsKey(Keyboard.GetState().GetPressedKeys()[i]) || !keys[Keyboard.GetState().GetPressedKeys()[i]])
                 {
-                    if (Keyboard.GetState().GetPressedKeys()[i] >= Keys.A && Keyboard.GetState().GetPressedKeys()[i] <= Keys.Z)
+                    if (Keyboard.GetState().GetPressedKeys()[i] >= Keys.A && Keyboard.GetState().GetPressedKeys()[i] <= Keys.Z ||
+                        (Keyboard.GetState().GetPressedKeys()[i] >= Keys.D0 && Keyboard.GetState().GetPressedKeys()[i] <= Keys.D9) ||
+                        (Keyboard.GetState().GetPressedKeys()[i] >= Keys.NumPad0 && Keyboard.GetState().GetPressedKeys()[i] <= Keys.NumPad9))
                     {
                         btnInput.Text = compruebaNombre(Keyboard.GetState().GetPressedKeys()[i].ToString());
                     }
@@ -137,7 +138,6 @@ namespace Cliente
                 }
                 mouseClick = false;
             }
-
             return this;
         }
         public string compruebaNombre(string nuevo)
