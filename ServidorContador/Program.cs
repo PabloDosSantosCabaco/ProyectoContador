@@ -188,14 +188,16 @@ namespace ServidorContador
         public void partida(Sala sala)
         {
             Partida partida = new Partida();
+            int playersInGame = sala.Clientes.Count;
             PaqueteTurno paquete;
             List<string> nombresJugadores = new List<string>();
             bool partidaAcabada = false;
+            int maxCards = 2;
             Console.WriteLine("Generando info");
             foreach(var cl in sala.Clientes)
             {
                 List<Carta> baraja = new List<Carta>();
-                for (int i=0; i<8; i++)
+                for (int i=0; i<maxCards; i++)
                 {
                     baraja.Add(cartaRandom());
                 }
@@ -294,6 +296,8 @@ namespace ServidorContador
                 if (partida.BarajasJugadores[partida.Turno].Count <= 0)
                 {
                     adiosJugador = partida.Turno;
+                    sala.Clientes[partida.Turno].enviarDatos("finPartida");
+                    sala.Clientes[partida.Turno].enviarDatos(""+(playersInGame-sala.Clientes.Count+1));
                     sala.Clientes[partida.Turno].desconectar();
                     sala.Clientes.Remove(partida.Turno);
                 }
@@ -311,6 +315,8 @@ namespace ServidorContador
             } while (!partidaAcabada);
             foreach(var cl in sala.Clientes)
             {
+                sala.Clientes[partida.Turno].enviarDatos("finPartida");
+                sala.Clientes[partida.Turno].enviarDatos("" + (playersInGame - sala.Clientes.Count + 1));
                 cl.Value.desconectar();
             }
         }

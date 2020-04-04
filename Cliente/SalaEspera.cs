@@ -108,21 +108,23 @@ namespace Cliente
         {
             if (!waitingRoomActive)
             {
-                return new Partida(game,server,name);
-            }
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-            {
-                mouseClick = true;
-            }
-            if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
-            {
-                if (host && btnStart.click(Mouse.GetState().X, Mouse.GetState().Y) && players.Count >= 2)
-                {
-                    server.enviarDatos("empezar");
-                }
-                mouseClick = false;
+                return new Partida(game,server,name,players.Count);
             }
             return this;
+        }
+
+        public Pantalla Click()
+        {
+            if (host && btnStart.click(Mouse.GetState().X, Mouse.GetState().Y) && players.Count >= 2)
+            {
+                server.enviarDatos("empezar");
+            }
+            return this;
+        }
+
+        public void KeyboardAction(Keys key)
+        {
+
         }
     }
 }

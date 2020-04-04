@@ -105,3 +105,13 @@
 #### Avances
 * Sala de espera funcional. Permite el comienzo de partidas.
 * Las partidas son ya posibles de forma tosca y sencilla. No contempla la posibilidad de que un jugador termine la partida.
+***
+## 04/04/2020
+#### Nuevo
+* Creación de la clase **FinPartida** para cuando los jugadores acaban el juego.
+* Implementación a la interfax **Pantalla** de las funciones `Click()` y `KeyboardAction(Keys key)` para mayor claridad en la estructuración del código de las clases hijas.
+* Creación de sprites nuevos para botones.
+#### Modificaciones
+* Cambios en el envío de información en la clase **Program** del servidor para ajustarlo a los cambios en el protocolo.
+* Supresión de la función `getJugadores()` en la clase **Servidor** del proyecto **Cliente** por no tener uso.
+* Cambio de pantalla al finalizar la partida mostrando su posición entre el resto de jugadores.

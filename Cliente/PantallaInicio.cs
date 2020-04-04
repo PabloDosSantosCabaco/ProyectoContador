@@ -43,22 +43,6 @@ namespace Cliente
 
         public Pantalla Update(GameTime gameTime)
         {
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-            {
-                mouseClick = true;
-            }
-            if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
-            {
-                if (BtnJoin.click(Mouse.GetState().X, Mouse.GetState().Y))
-                {
-                    return new PantallaUnir(game);
-                }
-                if (BtnCreate.click(Mouse.GetState().X, Mouse.GetState().Y))
-                {
-                    return new PantallaCrear(game);
-                }
-                mouseClick = false;
-            }
             return this;
         }
 
@@ -74,6 +58,24 @@ namespace Cliente
             BtnJoin.draw(game);
             BtnCreate.draw(game);
             game.spriteBatch.End();
+        }
+
+        public Pantalla Click()
+        {
+            if (BtnJoin.click(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                return new PantallaUnir(game);
+            }
+            if (BtnCreate.click(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                return new PantallaCrear(game);
+            }
+            return this;
+        }
+
+        public void KeyboardAction(Keys key)
+        {
+
         }
     }
 }

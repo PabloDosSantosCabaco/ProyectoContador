@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 
@@ -18,6 +19,8 @@ namespace Cliente
         public SpriteBatch spriteBatch;
         Pantalla p;
         string textoIntroducido = "";
+        bool mouseClick;
+        Dictionary<Keys, bool> keys = new Dictionary<Keys, bool>();
 
         public Game1()
         {
@@ -39,6 +42,7 @@ namespace Cliente
             this.IsMouseVisible = true;
             p = new PantallaInicio(this);
             p.Initialize();
+            mouseClick = false;
 
             //Valores marcadores
             base.Initialize();
@@ -85,11 +89,47 @@ namespace Cliente
 
             // TODO: Add your update logic here
             Pantalla pAux = p;
-            p = p.Update(gameTime);
-            if (p != pAux)
+            bool clickIntervention = false;
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
             {
-                p.Initialize();
-                p.LoadContent();
+                mouseClick = true;
+            }
+            if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
+            {
+                mouseClick = false;
+                p = p.Click();
+                if (p != pAux)
+                {
+                    p.Initialize();
+                    p.LoadContent();
+                    clickIntervention = true;
+                }
+            }
+            //Teclado
+            for (int i = 0; i < Keyboard.GetState().GetPressedKeys().Length; i++)
+            {
+                if (!keys.ContainsKey(Keyboard.GetState().GetPressedKeys()[i]) || !keys[Keyboard.GetState().GetPressedKeys()[i]])
+                {
+                    p.KeyboardAction(Keyboard.GetState().GetPressedKeys()[i]);
+                }
+                keys[Keyboard.GetState().GetPressedKeys()[i]] = true;
+            }
+            foreach (var tecla in keys.Keys.ToList())
+            {
+                if (!Keyboard.GetState().GetPressedKeys().Contains(tecla) && keys[tecla])
+                {
+                    keys[tecla] = false;
+                }
+            }
+
+            if (!clickIntervention)
+            {
+                p = p.Update(gameTime);
+                if (p != pAux)
+                {
+                    p.Initialize();
+                    p.LoadContent();
+                }
             }
             base.Update(gameTime);
         }

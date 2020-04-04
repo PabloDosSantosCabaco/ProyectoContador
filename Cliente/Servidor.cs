@@ -62,10 +62,5 @@ namespace Cliente
             sw.Flush();
             return Convert.ToInt32(sr.ReadLine());
         }
-        public void getJugadores()
-        {
-            sw.WriteLine("lista");
-            sw.Flush();
-        }
     }
 }

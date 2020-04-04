@@ -53,6 +53,9 @@ namespace ServidorContador
         }
         public void desconectar()
         {
+            sw.Close();
+            sr.Close();
+            ns.Close();
             socket.Close();
         }
     }

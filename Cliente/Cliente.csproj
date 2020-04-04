@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Boton.cs" />
     <Compile Include="Carta.cs" />
+    <Compile Include="FinPartida.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Pantalla.cs" />
     <Compile Include="PantallaUnir.cs" />

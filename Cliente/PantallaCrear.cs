@@ -83,70 +83,60 @@ namespace Cliente
         
         public Pantalla Update(GameTime gameTime)
         {
-            //Comprobación de introducción de texto
-            for (int i = 0; i < Keyboard.GetState().GetPressedKeys().Length; i++)
-            {
-                if (!keys.ContainsKey(Keyboard.GetState().GetPressedKeys()[i]) || !keys[Keyboard.GetState().GetPressedKeys()[i]])
-                {
-                    if (Keyboard.GetState().GetPressedKeys()[i] >= Keys.A && Keyboard.GetState().GetPressedKeys()[i] <= Keys.Z ||
-                        (Keyboard.GetState().GetPressedKeys()[i] >= Keys.D0 && Keyboard.GetState().GetPressedKeys()[i] <= Keys.D9) ||
-                        (Keyboard.GetState().GetPressedKeys()[i] >= Keys.NumPad0 && Keyboard.GetState().GetPressedKeys()[i] <= Keys.NumPad9))
-                    {
-                        btnInput.Text = compruebaNombre(Keyboard.GetState().GetPressedKeys()[i].ToString());
-                    }
-                    else if (Keyboard.GetState().GetPressedKeys()[i] == Keys.Space)
-                    {
-                        btnInput.Text = compruebaNombre(" ");
-                    }
-                    if (Keyboard.GetState().GetPressedKeys()[i] == Keys.Back && btnInput.Text.Length >= 1)
-                    {
-                        btnInput.Text = btnInput.Text.Remove(btnInput.Text.Length - 1);
-                    }
-                }
-                keys[Keyboard.GetState().GetPressedKeys()[i]] = true;
-            }
-            foreach(var tecla in keys.Keys.ToList())
-            {
-                if (!Keyboard.GetState().GetPressedKeys().Contains(tecla) && keys[tecla])
-                {
-                    keys[tecla] = false;
-                }
-            }
-            //Comprobación de uso de ratón
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-            {
-                mouseClick = true;
-            }
-            if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
-            {
-                if(btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
-                {
-                    return new PantallaInicio(game);
-                }
-                if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
-                {
-                    if (btnInput.Text.Trim().Length < 3)
-                    {
-                        error = true;
-                    }
-                    else
-                    {
-                        //Pedir numero sala al servidor
-                        Servidor servidor = new Servidor();
-                        return new SalaEspera(game,servidor.getSala(btnInput.Text), btnInput.Text, servidor,true);
-                    }  
-                }
-                mouseClick = false;
-            }
             return this;
         }
         public string compruebaNombre(string nuevo)
         {
+            //Digamos que sirve para los números
+            if (nuevo.Length > 1)
+            {
+                nuevo = nuevo.Substring(nuevo.Length - 1);
+            }
             if (font.MeasureString(btnInput.Text + nuevo).X < ScreenWidth * 3 / 4)
             {
                 return btnInput.Text + nuevo;
             }
             return btnInput.Text;
+        }
+
+        public Pantalla Click()
+        {
+            if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                return new PantallaInicio(game);
+            }
+            if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                if (btnInput.Text.Trim().Length < 3)
+                {
+                    error = true;
+                }
+                else
+                {
+                    //Pedir numero sala al servidor
+                    Servidor servidor = new Servidor();
+                    return new SalaEspera(game, servidor.getSala(btnInput.Text), btnInput.Text, servidor, true);
+                }
+            }
+            return this;
+        }
+
+        public void KeyboardAction(Keys key)
+        {
+            if (key >= Keys.A && key <= Keys.Z ||
+                (key >= Keys.D0 && key <= Keys.D9) ||
+                (key >= Keys.NumPad0 && key <= Keys.NumPad9))
+            {
+                btnInput.Text = compruebaNombre(key.ToString());
+            }
+            else if (key == Keys.Space)
+            {
+                btnInput.Text = compruebaNombre(" ");
+            }
+            if (key == Keys.Back && btnInput.Text.Length >= 1)
+            {
+                btnInput.Text = btnInput.Text.Remove(btnInput.Text.Length - 1);
+            }
         }
     }
 }

@@ -20,6 +20,9 @@ namespace Cliente
         Thread hiloConectividad;
         string name;
         bool mouseClick;
+        bool playing;
+        int rank;
+        int playersAtBegin;
 
         //Imagenes cartas
         Dictionary<string, Texture2D> cartas = new Dictionary<string, Texture2D>();
@@ -51,11 +54,13 @@ namespace Cliente
         Texture2D exampleCard;
         //Vectores que definen la posicion y reescalado de las cartas del jugador
         Vector2 cardPosition;
-        public Partida(Game1 game,Servidor server,string name)
+        public Partida(Game1 game,Servidor server,string name,int players)
         {
             this.game = game;
             this.server = server;
             this.name = name;
+            playing = true;
+            playersAtBegin = players;
         }
 
         public void Draw(GameTime gameTime)
@@ -77,7 +82,7 @@ namespace Cliente
             hiloConectividad.Start();
             //Al empezar el jugador está jugando
             finish = false;
-                
+            rank = 0;
             //Permitimos ver el cursor en la centana
             //Window.AllowUserResizing = true;
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
@@ -109,6 +114,11 @@ namespace Cliente
 
         public Pantalla Update(GameTime gameTime)
         {
+            if (!playing)
+            {
+                server.closeServer();
+                return new FinPartida(game, rank);
+            }
             //Si la ventana del juego cambia sus dimensiones, se adaptan los tamaños de los objetos
             if (game.graphics.GraphicsDevice.Viewport.Width != ScreenWidth || game.graphics.GraphicsDevice.Viewport.Height != ScreenHeight)
             {
@@ -118,59 +128,24 @@ namespace Cliente
             }
             //Para cada carta del jugador, se carga su correspondiente imagen
             actualizarBaraja();
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-            {
-                mouseClick = true;
-            }
-            if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
-            {
-                if (data.Turno == name)
-                {
-                    if (btnPass.click(Mouse.GetState().X, Mouse.GetState().Y))
-                    {
-                        server.enviarDatos("pasar");
-                        /*sw.WriteLine("pasar");
-                        sw.Flush();*/
-                    }
-                    if (btnPlay.click(Mouse.GetState().X, Mouse.GetState().Y) && selectedCard != -1)
-                    {
-                        server.enviarDatos("jugar");
-                        server.enviarDatos(data.Cartas[selectedCard].Tipo.ToString());
-                        server.enviarDatos(data.Cartas[selectedCard].Valor.ToString());
-                        server.enviarDatos(data.Cartas[selectedCard].Sentido.ToString());
-                        /*
-                        sw.WriteLine("jugar");
-                        sw.WriteLine(data.Cartas[selectedCard].Tipo.ToString());
-                        sw.WriteLine(data.Cartas[selectedCard].Valor.ToString());
-                        sw.WriteLine(data.Cartas[selectedCard].Sentido.ToString());
-                        sw.Flush();
-                        */
-                        selectedCard = -1;
-                    }
-                }
-                foreach (Boton btn in cartasBtn)
-                {
-                    if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
-                    {
-                        selectedCard = cartasBtn.IndexOf(btn);
-                    }
-                }
-                mouseClick = false;
-            }
             return this;
         }
         public void comprobarTurno()
         {
-            //Ojo cuidao
-            while (true)
+            while (playing)
             {
                 actualizarDatos();
             }
         }
         public void actualizarDatos()
         {
-            string aux = server.recibirDatos();// sr.ReadLine();
-            Console.WriteLine(aux);
+            string aux = server.recibirDatos();
+            if (aux == "finPartida")
+            {
+                rank = Convert.ToInt32(server.recibirDatos());
+                playing = false;
+                return;
+            }
             int numCartas = Convert.ToInt32(aux);
             List<Carta> auxLista = new List<Carta>();
             for (int i = 0; i < numCartas; i++)
@@ -178,20 +153,20 @@ namespace Cliente
                 auxLista.Add(
                     new Carta(
                         (Carta.eTipo)Enum.Parse(typeof(Carta.eTipo), 
-                        server.recibirDatos()/* sr.ReadLine()*/), 
-                        Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/), 
-                        Convert.ToBoolean(server.recibirDatos()/* sr.ReadLine()*/)
+                        server.recibirDatos()), 
+                        Convert.ToInt32(server.recibirDatos()), 
+                        Convert.ToBoolean(server.recibirDatos())
                         )
                     );
             }
-            int auxValor = Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/);
-            bool auxSentido = Convert.ToBoolean(server.recibirDatos()/* sr.ReadLine()*/);
-            string auxTurno = server.recibirDatos()/* sr.ReadLine()*/;
+            int auxValor = Convert.ToInt32(server.recibirDatos());
+            bool auxSentido = Convert.ToBoolean(server.recibirDatos());
+            string auxTurno = server.recibirDatos();
             Dictionary<string, int> auxDic = new Dictionary<string, int>();
-            int numJugadores = Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/);
+            int numJugadores = Convert.ToInt32(server.recibirDatos());
             for (int i = 0; i < numJugadores; i++)
             {
-                auxDic.Add(server.recibirDatos()/* sr.ReadLine()*/, Convert.ToInt32(server.recibirDatos()/* sr.ReadLine()*/));
+                auxDic.Add(server.recibirDatos(), Convert.ToInt32(server.recibirDatos()));
             }
             data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
         }
@@ -274,6 +249,38 @@ namespace Cliente
                 game.spriteBatch.DrawString(font, jugador.Key + ": " + jugador.Value, posicionMarcador, Color.White);
                 posicionMarcador.Y += font.MeasureString(jugador.Key + ": " + jugador.Value).Y;
             }
+        }
+
+        public Pantalla Click()
+        {
+            if (data.Turno == name)
+            {
+                if (btnPass.click(Mouse.GetState().X, Mouse.GetState().Y))
+                {
+                    server.enviarDatos("pasar");
+                }
+                if (btnPlay.click(Mouse.GetState().X, Mouse.GetState().Y) && selectedCard != -1)
+                {
+                    server.enviarDatos("jugar");
+                    server.enviarDatos(data.Cartas[selectedCard].Tipo.ToString());
+                    server.enviarDatos(data.Cartas[selectedCard].Valor.ToString());
+                    server.enviarDatos(data.Cartas[selectedCard].Sentido.ToString());
+                    selectedCard = -1;
+                }
+            }
+            foreach (Boton btn in cartasBtn)
+            {
+                if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
+                {
+                    selectedCard = cartasBtn.IndexOf(btn);
+                }
+            }
+            return this;
+        }
+
+        public void KeyboardAction(Keys key)
+        {
+
         }
     }
 }
