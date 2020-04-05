@@ -28,6 +28,7 @@ namespace Cliente
         Dictionary<string, Texture2D> cartas = new Dictionary<string, Texture2D>();
         //Cartas jugador
         List<Boton> cartasBtn = new List<Boton>();
+        Boton btnSelectedCard;
         //Boton jugar y botón pasar
         Boton btnPlay;
         Boton btnPass;
@@ -70,6 +71,10 @@ namespace Cliente
             dibujarMarcadores();
             dibujarTurno();
             dibujarBotones();
+            if (selectedCard != -1)
+            {
+                btnSelectedCard.draw(game);
+            }
             dibujarCartas();
             game.spriteBatch.End();
         }   
@@ -100,6 +105,7 @@ namespace Cliente
             cartas.Add("bucle", game.Content.Load<Texture2D>("Sprites/bucle"));
             cartas.Add("minus", game.Content.Load<Texture2D>("Sprites/minus"));
             cartas.Add("plus", game.Content.Load<Texture2D>("Sprites/plus"));
+            cartas.Add("selectedCard", game.Content.Load<Texture2D>("Sprites/selectedCard"));
             //Cargamos la fuente del juego
             font = game.Content.Load<SpriteFont>("Fuentes/Fuente");
             fontValue = game.Content.Load<SpriteFont>("Fuentes/FuenteValor");
@@ -110,6 +116,7 @@ namespace Cliente
             actualizarBaraja();
             btnPlay = new Boton(ScreenWidth / 2 - ScreenWidth / 8, ScreenHeight / 2, imgBtnPlay, ScreenWidth / 8);
             btnPass = new Boton(ScreenWidth / 2, ScreenHeight / 2, imgBtnPass, ScreenWidth / 8);
+            btnSelectedCard = new Boton(0, 0, cartas["selectedCard"], column);
         }
 
         public Pantalla Update(GameTime gameTime)
@@ -273,6 +280,8 @@ namespace Cliente
                 if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
                 {
                     selectedCard = cartasBtn.IndexOf(btn);
+                    btnSelectedCard.X = btn.X-column/10;
+                    btnSelectedCard.Y = (btn.Y+btn.Height/2)-btnSelectedCard.Height/2;
                 }
             }
             return this;

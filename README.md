@@ -115,3 +115,7 @@
 * Cambios en el envío de información en la clase **Program** del servidor para ajustarlo a los cambios en el protocolo.
 * Supresión de la función `getJugadores()` en la clase **Servidor** del proyecto **Cliente** por no tener uso.
 * Cambio de pantalla al finalizar la partida mostrando su posición entre el resto de jugadores.
+***
+## 05/04/2020
+#### Nuevo
+* Creación de un marco para señalar qué carta ha seleccionado el jugador.
