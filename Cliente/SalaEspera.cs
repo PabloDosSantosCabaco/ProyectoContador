@@ -54,11 +54,20 @@ namespace Cliente
                 else if(frase =="players")
                 {
                     int playerNum = Convert.ToInt32(server.recibirDatos());
-                    players.Clear();
+                    List<string> auxPlayers = new List<string>();
                     for (int i = 0; i < playerNum; i++)
                     {
-                        players.Add(server.getData());
+                        auxPlayers.Add(server.getData());
                     }
+                    if (players.Count > auxPlayers.Count)
+                    {
+                        game.efectos[Game1.eSonidos.playerLeave].Play();
+                    }
+                    else if (players.Count < auxPlayers.Count)
+                    {
+                        game.efectos[Game1.eSonidos.newPlayer].Play();
+                    }
+                    players = auxPlayers;
                 }
             }
         }
@@ -117,6 +126,7 @@ namespace Cliente
         {
             if (host && btnStart.click(Mouse.GetState().X, Mouse.GetState().Y) && players.Count >= 2)
             {
+                game.efectos[Game1.eSonidos.click].Play();
                 server.enviarDatos("empezar");
             }
             return this;

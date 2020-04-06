@@ -53,6 +53,7 @@ namespace Cliente
         {
             if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
             {
+                game.efectos[Game1.eSonidos.click].Play();
                 return new PantallaInicio(game);
             }
             return this;

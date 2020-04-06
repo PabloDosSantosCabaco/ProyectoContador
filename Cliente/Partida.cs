@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -19,15 +20,14 @@ namespace Cliente
 
         Thread hiloConectividad;
         string name;
-        bool mouseClick;
         bool playing;
         int rank;
         int playersAtBegin;
 
         //Imagenes cartas
-        Dictionary<string, Texture2D> cartas = new Dictionary<string, Texture2D>();
+        Dictionary<string, Texture2D> cartas;
         //Cartas jugador
-        List<Boton> cartasBtn = new List<Boton>();
+        List<Boton> cartasBtn;
         Boton btnSelectedCard;
         //Boton jugar y botón pasar
         Boton btnPlay;
@@ -62,6 +62,8 @@ namespace Cliente
             this.name = name;
             playing = true;
             playersAtBegin = players;
+            cartasBtn = new List<Boton>();
+            cartas = new Dictionary<string, Texture2D>();
         }
 
         public void Draw(GameTime gameTime)
@@ -93,7 +95,6 @@ namespace Cliente
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
             column = ScreenWidth / maxCards;
-            mouseClick = false;
         }
 
         public void LoadContent()
@@ -264,21 +265,43 @@ namespace Cliente
             {
                 if (btnPass.click(Mouse.GetState().X, Mouse.GetState().Y))
                 {
+                    game.efectos[Game1.eSonidos.overCount].Play();
                     server.enviarDatos("pasar");
                 }
                 if (btnPlay.click(Mouse.GetState().X, Mouse.GetState().Y) && selectedCard != -1)
                 {
+                    switch (data.Cartas[selectedCard].Tipo)
+                    {
+                        case Carta.eTipo.Numero:
+                            if (data.Sentido && data.ValorMesa + data.Cartas[selectedCard].Valor >= 10 ||
+                            !data.Sentido && data.ValorMesa - data.Cartas[selectedCard].Valor <= -10)
+                            {
+                                game.efectos[Game1.eSonidos.overCount].Play();
+                            }
+                            else
+                            {
+                                game.efectos[Game1.eSonidos.play].Play();
+                            }
+                            break;
+                        case Carta.eTipo.Sentido:
+                            game.efectos[Game1.eSonidos.changeWay].Play();
+                            break;
+                        case Carta.eTipo.Efecto:
+                            game.efectos[Game1.eSonidos.forCards].Play();
+                            break;
+                    }
                     server.enviarDatos("jugar");
                     server.enviarDatos(data.Cartas[selectedCard].Tipo.ToString());
                     server.enviarDatos(data.Cartas[selectedCard].Valor.ToString());
                     server.enviarDatos(data.Cartas[selectedCard].Sentido.ToString());
-                    selectedCard = -1;
                 }
+                selectedCard = -1;
             }
             foreach (Boton btn in cartasBtn)
             {
                 if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
                 {
+                    game.efectos[Game1.eSonidos.click].Play();
                     selectedCard = cartasBtn.IndexOf(btn);
                     btnSelectedCard.X = btn.X-column/10;
                     btnSelectedCard.Y = (btn.Y+btn.Height/2)-btnSelectedCard.Height/2;

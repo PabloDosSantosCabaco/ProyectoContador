@@ -103,6 +103,7 @@ namespace Cliente
         {
             if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
             {
+                game.efectos[Game1.eSonidos.click].Play();
                 return new PantallaInicio(game);
             }
             if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
@@ -114,6 +115,7 @@ namespace Cliente
                 else
                 {
                     //Pedir numero sala al servidor
+                    game.efectos[Game1.eSonidos.click].Play();
                     Servidor servidor = new Servidor();
                     return new SalaEspera(game, servidor.getSala(btnInput.Text), btnInput.Text, servidor, true);
                 }

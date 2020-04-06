@@ -119,3 +119,13 @@
 ## 05/04/2020
 #### Nuevo
 * Creación de un marco para señalar qué carta ha seleccionado el jugador.
+***
+## 06/04/2020
+#### Modificaciones
+* El servidor es capaz de gestionar múltiples clientes generando un hilo para cada uno de ellos.
+* La función `crearSala(Cliente cliente)` del **Servidor** devuelve ahora un booleano permitiendo introducir de nuevo un comando para evitar la interrupción del programa ante un nombre inválido.
+* Generado en **Game1** un enumerado para diferenciar todos los posibles efectos de sonido a utilizar en la aplicación. Se plantea concretar de esta forma los sprites, cargándolos y reuniéndolos todos en **Game1**.
+* La función `Update(GameTime gameTime)` de **Game1** evita la comprobación de click o introducción de teclas si la pantalla del cliente se ha actualizando evitando así posibles errores de introducción de datos.
+* Se evita la superposición de clicks ante pantallas superpuestas, error que había sido registrado. Esto daba lugar a errores también como la deselección de carta entre jugadores: cuando uno seleccionada una carta, al resto le cambiaba también la selección. Solucionado.
+#### Avances
+* Todas las pantallas cuentan con efectos de sonido al interactuar con la interfaz.

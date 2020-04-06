@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -20,7 +21,18 @@ namespace Cliente
         Pantalla p;
         string textoIntroducido = "";
         bool mouseClick;
-        Dictionary<Keys, bool> keys = new Dictionary<Keys, bool>();
+        Dictionary<Keys, bool> keys;
+        public enum eSonidos
+        {
+            click,
+            play,
+            overCount,
+            changeWay,
+            forCards,
+            newPlayer,
+            playerLeave
+        }
+        public Dictionary<eSonidos, SoundEffect> efectos;
 
         public Game1()
         {
@@ -43,7 +55,8 @@ namespace Cliente
             p = new PantallaInicio(this);
             p.Initialize();
             mouseClick = false;
-
+            keys = new Dictionary<Keys, bool>();
+            efectos = new Dictionary<eSonidos, SoundEffect>();
             //Valores marcadores
             base.Initialize();
         }
@@ -65,6 +78,13 @@ namespace Cliente
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            efectos.Add(eSonidos.click, this.Content.Load<SoundEffect>("Sounds/selectCard"));
+            efectos.Add(eSonidos.play, this.Content.Load<SoundEffect>("Sounds/play"));
+            efectos.Add(eSonidos.overCount, this.Content.Load<SoundEffect>("Sounds/overCount"));
+            efectos.Add(eSonidos.changeWay, this.Content.Load<SoundEffect>("Sounds/changeWay"));
+            efectos.Add(eSonidos.forCards, this.Content.Load<SoundEffect>("Sounds/for"));
+            efectos.Add(eSonidos.newPlayer, this.Content.Load<SoundEffect>("Sounds/newPlayer"));
+            efectos.Add(eSonidos.playerLeave, this.Content.Load<SoundEffect>("Sounds/playerLeave"));
             p.LoadContent();
         }
 
@@ -88,7 +108,6 @@ namespace Cliente
                 Exit();
 
             // TODO: Add your update logic here
-            Pantalla pAux = p;
             bool clickIntervention = false;
             if (Mouse.GetState().LeftButton == ButtonState.Pressed)
             {
@@ -97,12 +116,15 @@ namespace Cliente
             if (mouseClick && Mouse.GetState().LeftButton == ButtonState.Released)
             {
                 mouseClick = false;
-                p = p.Click();
-                if (p != pAux)
-                {
-                    p.Initialize();
-                    p.LoadContent();
-                    clickIntervention = true;
+                if (this.IsActive) { 
+                    Pantalla pAux = p;
+                    p = p.Click();
+                    if (p != pAux)
+                    {
+                        p.Initialize();
+                        p.LoadContent();
+                        clickIntervention = true;
+                    }
                 }
             }
             //Teclado
@@ -110,7 +132,10 @@ namespace Cliente
             {
                 if (!keys.ContainsKey(Keyboard.GetState().GetPressedKeys()[i]) || !keys[Keyboard.GetState().GetPressedKeys()[i]])
                 {
-                    p.KeyboardAction(Keyboard.GetState().GetPressedKeys()[i]);
+                    if (!clickIntervention)
+                    {
+                        p.KeyboardAction(Keyboard.GetState().GetPressedKeys()[i]);
+                    }
                 }
                 keys[Keyboard.GetState().GetPressedKeys()[i]] = true;
             }
@@ -124,6 +149,7 @@ namespace Cliente
 
             if (!clickIntervention)
             {
+                Pantalla pAux = p;
                 p = p.Update(gameTime);
                 if (p != pAux)
                 {

@@ -43,33 +43,40 @@ namespace ServidorContador
             {
                 //Llega un cliente
                 Socket sCliente = s.Accept();
-                gestionCliente(sCliente);
+                Thread hiloGestionCliente = new Thread(() => gestionCliente(sCliente));
+                hiloGestionCliente.Start();
             }
             s.Close();
         }
-        public void crearSala(Cliente cliente)
+        public bool crearSala(Cliente cliente)
         {
             string nombre;
             nombre=cliente.recibirDatos();
             Console.WriteLine("Mi cliente se llama " + nombre);
-            //Creo la nueva sala
-            Sala sala = new Sala(contadorSalas,nombre,cliente);
-            Console.WriteLine("Devuelvo el numero de sala: "+contadorSalas);
-            cliente.enviarDatos(contadorSalas.ToString());
-            //Aumento el identificador para evitar repetir salas
-            contadorSalas++;
-            //Añado la sala a la colección
-            salas.Add(sala.IdSala, sala);
-            Thread hiloSala = new Thread(()=>salaEspera(sala));
-            hiloSala.Start();
+            if (nombre.Trim().Length >= 3)
+            {
+                //Creo la nueva sala
+                Sala sala = new Sala(contadorSalas, nombre, cliente);
+                Console.WriteLine("Devuelvo el numero de sala: " + contadorSalas);
+                cliente.enviarDatos(contadorSalas.ToString());
+                //Aumento el identificador para evitar repetir salas
+                contadorSalas++;
+                //Añado la sala a la colección
+                salas.Add(sala.IdSala, sala);
+                Thread hiloSala = new Thread(() => salaEspera(sala));
+                hiloSala.Start();
+                return true;
+            }
+            return false;
         }
-        public bool entrarSala(Cliente cliente,int sala)
+        public bool entrarSala(Cliente cliente)
         {
             //Comprueba si la sala a la que quiere entrar existe y si tiene menos de 8 clientes
+            int sala = Convert.ToInt32(cliente.recibirDatos());
+            string nombre = cliente.recibirDatos();
             if (salas.ContainsKey(sala) && salas.GetValueOrDefault(sala).Clientes.Count<maxClientes)
             {
                 //cliente.enviarDatos("Escribe tu nombre:");
-                string nombre = cliente.recibirDatos();
                 //El cliente entra en la sala
                 lock (salas.GetValueOrDefault(sala)) {
                     if (salas.GetValueOrDefault(sala).Clientes.ContainsKey(nombre))
@@ -104,7 +111,6 @@ namespace ServidorContador
         {
             Console.WriteLine("Ha entrado un cliente");
             Cliente cliente = new Cliente(socket);
-            //cliente.enviarDatos("Bienvenido");
             bool gestionado;
             //Decidimos si crea o se une
             do
@@ -115,19 +121,18 @@ namespace ServidorContador
                 switch (res)
                 {
                     case "new":
-                            //Creamos la sala metiendo al primer cliente como host
-                            crearSala(cliente);
-                            break;
+                        //Creamos la sala metiendo al primer cliente como host
+                        if (!crearSala(cliente))
+                        {
+                            gestionado = false;
+                        }
+                        break;
                     case "join":
                         try
                         {
-                            //Leemos la sala a la que quiere entrar
-                            //cliente.enviarDatos("Introduce la sala:");
-                            int sala = Convert.ToInt32(cliente.recibirDatos());
                             //Gestionamos que el cliente no haya podido entrar en la sala
-                            if (!entrarSala(cliente, sala))
+                            if (!entrarSala(cliente))
                             {
-                                Console.WriteLine($"El cliente {cliente.getIP()} no ha podido conectarse a la sala {sala}");
                                 //cliente.enviarDatos("La sala a la que intentas entrar o existe o está llena.");
                                 gestionado = false;
                             }
@@ -159,27 +164,23 @@ namespace ServidorContador
             do
             {
                 string res = host.recibirDatos();
-                switch (res) {
-                    case "empezar":
-                        lock (sala)
+                if (res == "empezar")
+                {
+                    lock (sala)
+                    {
+                        if (sala.Clientes.Count >= 2)
                         {
-                            if (sala.Clientes.Count >= 2)
+                            foreach (Cliente client in sala.Clientes.Values)
                             {
-                                foreach(Cliente client in sala.Clientes.Values)
-                                {
-                                    client.enviarDatos("start");
-                                }
-                                sala.Empezado = true;
+                                client.enviarDatos("start");
                             }
-                            else
-                            {
-                                host.enviarDatos("error");
-                            }
+                            sala.Empezado = true;
                         }
-                        break;
-                    case "cant":
-                        host.enviarDatos(sala.Clientes.Count+"");
-                        break;
+                        else
+                        {
+                            host.enviarDatos("error");
+                        }
+                    }
                 }
                 Thread.Sleep(1);
             } while (!sala.Empezado);
@@ -192,7 +193,7 @@ namespace ServidorContador
             PaqueteTurno paquete;
             List<string> nombresJugadores = new List<string>();
             bool partidaAcabada = false;
-            int maxCards = 2;
+            int maxCards = 5;
             Console.WriteLine("Generando info");
             foreach(var cl in sala.Clientes)
             {

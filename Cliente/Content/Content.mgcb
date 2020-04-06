@@ -59,6 +59,54 @@
 /processorParam:TextureFormat=Compressed
 /build:Fuentes/FuenteValor.spritefont
 
+#begin Sounds/changeWay.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/changeWay.wav
+
+#begin Sounds/efecto.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/efecto.wav
+
+#begin Sounds/for.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/for.wav
+
+#begin Sounds/newPlayer.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/newPlayer.wav
+
+#begin Sounds/overCount.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/overCount.wav
+
+#begin Sounds/play.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/play.wav
+
+#begin Sounds/playerLeave.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/playerLeave.wav
+
+#begin Sounds/selectCard.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/selectCard.wav
+
 #begin Sprites/3.png
 /importer:TextureImporter
 /processor:TextureProcessor

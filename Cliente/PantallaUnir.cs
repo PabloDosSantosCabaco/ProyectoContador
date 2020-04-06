@@ -124,6 +124,7 @@ namespace Cliente
         {
             if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
             {
+                game.efectos[Game1.eSonidos.click].Play();
                 return new PantallaInicio(game);
             }
             if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
@@ -140,6 +141,7 @@ namespace Cliente
                     switch (servidor.recibirDatos())
                     {
                         case "true":
+                            game.efectos[Game1.eSonidos.click].Play();
                             return new SalaEspera(game, Convert.ToInt32(txtInputRoom.Text), txtInputName.Text, servidor, false);
                         case "errorNombre":
                             errorSala = false;
