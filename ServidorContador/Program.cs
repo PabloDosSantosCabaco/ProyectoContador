@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -88,14 +89,9 @@ namespace ServidorContador
                     salas.GetValueOrDefault(sala).addCliente(nombre,cliente);
                     Console.WriteLine($"El cliente {nombre} ha entrado en la sala");
                     cliente.enviarDatos("true");
-                    foreach(var client in salas.GetValueOrDefault(sala).Clientes)
+                    foreach(Cliente client in salas.GetValueOrDefault(sala).Clientes.Values)
                     {
-                        client.Value.enviarDatos("players");
-                        client.Value.enviarDatos(salas.GetValueOrDefault(sala).Clientes.Count.ToString());
-                        foreach(var nombreJugador in salas.GetValueOrDefault(sala).Clientes)
-                        {
-                            client.Value.enviarDatos(nombreJugador.Key);
-                        }
+                        client.refreshWaitingRoom(salas.GetValueOrDefault(sala));
                     }
                 }
                 return true;
@@ -149,7 +145,6 @@ namespace ServidorContador
                         break;
                 }
             } while (!gestionado);
-            Console.WriteLine("Se ha ido un cliente");
         }
         public void salaEspera(Sala sala)
         {
@@ -157,34 +152,65 @@ namespace ServidorContador
             //Comprobar cuando se va un cliente
             //¿Qué pasa si se va el host? ¿Cómo se gestiona al resto de clientes?
             Cliente host;
+            bool correcto = true;
             lock (sala)
             {
                 host = sala.Clientes.GetValueOrDefault(sala.NombreHost);
             }
             do
             {
-                string res = host.recibirDatos();
-                if (res == "empezar")
+                try
+                {
+                    string res = host.recibirDatos();
+                    Console.WriteLine("Respuesta del cliente: "+res);
+                    if (res == "empezar")
+                    {
+                        lock (sala)
+                        {
+                            if (sala.Clientes.Count >= 2)
+                            {
+                                foreach (Cliente client in sala.Clientes.Values)
+                                {
+                                    client.enviarDatos("start");
+                                }
+                                sala.Acabado = true;
+                            }
+                            else
+                            {
+                                host.enviarDatos("error");
+                            }
+                        }
+                    }
+                }catch(IOException ex)
                 {
                     lock (sala)
                     {
-                        if (sala.Clientes.Count >= 2)
+                        if (sala.Clientes.Count <= 1)
                         {
-                            foreach (Cliente client in sala.Clientes.Values)
-                            {
-                                client.enviarDatos("start");
-                            }
-                            sala.Empezado = true;
+                            sala.Acabado = true;
+                            correcto = false;
+                            Console.WriteLine($"Se ha cerrado la sala {sala.IdSala}");
                         }
                         else
                         {
-                            host.enviarDatos("error");
+                            sala.Clientes.Remove(sala.NombreHost);
+                            sala.PlayersNames.Remove(sala.NombreHost);
+                            sala.NombreHost = sala.PlayersNames.First();
+                            host = sala.Clientes.GetValueOrDefault(sala.NombreHost);
+                            foreach(Cliente client in sala.Clientes.Values)
+                            {
+                                client.refreshWaitingRoom(sala);
+                            }
+                            Console.WriteLine($"El nuevo host de la sala {sala.IdSala} es {sala.NombreHost}");
+                            
                         }
                     }
                 }
-                Thread.Sleep(1);
-            } while (!sala.Empezado);
-            partida(sala);
+            } while (!sala.Acabado);
+            if (correcto)
+            {
+                partida(sala);
+            }
         }
         public void partida(Sala sala)
         {

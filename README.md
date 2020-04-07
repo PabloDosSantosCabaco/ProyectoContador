@@ -129,3 +129,11 @@
 * Se evita la superposición de clicks ante pantallas superpuestas, error que había sido registrado. Esto daba lugar a errores también como la deselección de carta entre jugadores: cuando uno seleccionada una carta, al resto le cambiaba también la selección. Solucionado.
 #### Avances
 * Todas las pantallas cuentan con efectos de sonido al interactuar con la interfaz.
+***
+## 07/04/2020
+#### Modificaciones
+* Se carga en todos los usuarios el boton de empezar por si el host original se desconecta y uno debe relevar su puesto.
+* Nueva función `refreshWaitingRoom(Sala sala)` en la clase **Cliente** para gestionar la llegada y salida de nuevos clientes a la sala.
+* Creada una lista auxiliar con los nombres de los jugadores en la clase **Sala** para poder gestionar un orden de llegada.
+#### Avances
+* Gestionado en el servidor la desconexión de usuarios dentro de una sala de espera así como el relevo del host a otro jugador en caso de que el host original se desconecte.

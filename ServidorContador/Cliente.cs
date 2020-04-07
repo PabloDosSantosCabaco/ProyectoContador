@@ -51,6 +51,16 @@ namespace ServidorContador
             bool sentido = Convert.ToBoolean(sr.ReadLine());
             return new Carta(tipo,valor,sentido);
         }
+        public void refreshWaitingRoom(Sala sala)
+        {
+            enviarDatos("players");
+            enviarDatos(sala.Clientes.Count.ToString());
+            foreach (string nombreJugador in sala.PlayersNames)
+            {
+                enviarDatos(nombreJugador);
+            }
+            enviarDatos(sala.NombreHost);
+        }
         public void desconectar()
         {
             sw.Close();

@@ -59,6 +59,11 @@ namespace Cliente
                     {
                         auxPlayers.Add(server.getData());
                     }
+                    string auxHost = server.recibirDatos();
+                    if(auxHost == name)
+                    {
+                        host = true;
+                    }
                     if (players.Count > auxPlayers.Count)
                     {
                         game.efectos[Game1.eSonidos.playerLeave].Play();
@@ -106,11 +111,8 @@ namespace Cliente
         public void LoadContent()
         {
             font = game.Content.Load<SpriteFont>("Fuentes/Intro");
-            if (host)
-            {
-                imgStart = game.Content.Load<Texture2D>("Sprites/btnEmpezar");
-                btnStart = new Boton(ScreenWidth / 2 - ScreenWidth / 4 / 2, ScreenHeight * 4 / 5, imgStart, ScreenWidth / 4);
-            }
+            imgStart = game.Content.Load<Texture2D>("Sprites/btnEmpezar");
+            btnStart = new Boton(ScreenWidth / 2 - ScreenWidth / 4 / 2, ScreenHeight * 4 / 5, imgStart, ScreenWidth / 4);
         }
 
         public Pantalla Update(GameTime gameTime)
