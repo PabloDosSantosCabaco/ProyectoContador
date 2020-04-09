@@ -137,3 +137,10 @@
 * Creada una lista auxiliar con los nombres de los jugadores en la clase **Sala** para poder gestionar un orden de llegada.
 #### Avances
 * Gestionado en el servidor la desconexión de usuarios dentro de una sala de espera así como el relevo del host a otro jugador en caso de que el host original se desconecte.
+***
+## 09/04/2020
+#### Modificaciones
+* La clase **Sala** contiene la variable que guarda cuantos jugadores han entrado y han jugado durante toda la partida. Se va actualizando.
+* El servidor gestiona la desconexión inesperada de clientes. Se han modificado los valores de los puertos y las direcciones de los Socket de clientes para lanzar el servidor online.
+#### Avances
+* Supuestamente, la aplicación es funcional y la base está acabada.

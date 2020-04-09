@@ -21,7 +21,7 @@ namespace Cliente
             {
                 try
                 {
-                    client = new TcpClient("127.0.0.1", i);
+                    client = new TcpClient("javi.ink", 20000);
                     conectado = true;
                     ns = client.GetStream();
                     sr = new StreamReader(ns);
