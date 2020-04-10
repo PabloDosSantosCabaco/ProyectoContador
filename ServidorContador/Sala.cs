@@ -14,7 +14,6 @@ namespace ServidorContador
         public int IdSala { get; }
         public bool Acabado { get; set; }
         public string NombreHost { get; set; }
-        public int AllPlayers { get; set; }
 
         public Sala(int idSala,string nombre,Cliente host)
         {
@@ -27,6 +26,11 @@ namespace ServidorContador
         {
             PlayersNames.Add(nombre);
             Clientes.Add(nombre,cliente);
+        }
+        public void deletePlayer(string nombre)
+        {
+            Clientes.Remove(nombre);
+            PlayersNames.Remove(nombre);
         }
     }
 }

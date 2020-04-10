@@ -79,5 +79,10 @@ namespace Cliente
         {
 
         }
+
+        public void onExiting(object sender, EventArgs args)
+        {
+
+        }
     }
 }

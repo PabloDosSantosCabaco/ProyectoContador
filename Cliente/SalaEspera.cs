@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -29,7 +30,7 @@ namespace Cliente
         public int ScreenWidth { get; set; }
         public int ScreenHeight { get; set; }
         int numberRoom;
-        
+        Thread getNewPlayersThread;
         public SalaEspera(Game1 game,int numberRoom,string name,Servidor server,bool host)
         {
             this.game = game;
@@ -39,41 +40,47 @@ namespace Cliente
             this.host = host;
             waitingRoomActive = true;
             players.Add(name);
-            Thread getNewPlayersThread = new Thread(() => getNewPlayers());
+            getNewPlayersThread = new Thread(() => getNewPlayers());
             getNewPlayersThread.Start();
         }
         public void getNewPlayers()
         {
-            while (waitingRoomActive)
+            try
             {
-                string frase = server.recibirDatos();
-                if (frase == "start")
+                while (waitingRoomActive)
                 {
-                    waitingRoomActive = false;
+                    string frase = server.recibirDatos();
+                    if (frase == "start")
+                    {
+                        waitingRoomActive = false;
+                    }
+                    else if (frase == "players")
+                    {
+                        int playerNum = Convert.ToInt32(server.recibirDatos());
+                        List<string> auxPlayers = new List<string>();
+                        for (int i = 0; i < playerNum; i++)
+                        {
+                            auxPlayers.Add(server.getData());
+                        }
+                        string auxHost = server.recibirDatos();
+                        if (auxHost == name)
+                        {
+                            host = true;
+                        }
+                        if (players.Count > auxPlayers.Count)
+                        {
+                            game.efectos[Game1.eSonidos.playerLeave].Play();
+                        }
+                        else if (players.Count < auxPlayers.Count)
+                        {
+                            game.efectos[Game1.eSonidos.newPlayer].Play();
+                        }
+                        players = auxPlayers;
+                    }
                 }
-                else if(frase =="players")
-                {
-                    int playerNum = Convert.ToInt32(server.recibirDatos());
-                    List<string> auxPlayers = new List<string>();
-                    for (int i = 0; i < playerNum; i++)
-                    {
-                        auxPlayers.Add(server.getData());
-                    }
-                    string auxHost = server.recibirDatos();
-                    if(auxHost == name)
-                    {
-                        host = true;
-                    }
-                    if (players.Count > auxPlayers.Count)
-                    {
-                        game.efectos[Game1.eSonidos.playerLeave].Play();
-                    }
-                    else if (players.Count < auxPlayers.Count)
-                    {
-                        game.efectos[Game1.eSonidos.newPlayer].Play();
-                    }
-                    players = auxPlayers;
-                }
+            }
+            catch (IOException ex)
+            {
             }
         }
         public void Draw(GameTime gameTime)
@@ -119,6 +126,7 @@ namespace Cliente
         {
             if (!waitingRoomActive)
             {
+                getNewPlayersThread.Join();
                 return new Partida(game,server,name,players.Count);
             }
             return this;
@@ -137,6 +145,12 @@ namespace Cliente
         public void KeyboardAction(Keys key)
         {
 
+        }
+
+        public void onExiting(object sender, EventArgs args)
+        {
+            server.closeServer();
+            getNewPlayersThread.Join();
         }
     }
 }

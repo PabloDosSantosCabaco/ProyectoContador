@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -125,6 +124,7 @@ namespace Cliente
             if (!playing)
             {
                 server.closeServer();
+                hiloConectividad.Join();
                 return new FinPartida(game, rank);
             }
             //Si la ventana del juego cambia sus dimensiones, se adaptan los tamaños de los objetos
@@ -147,36 +147,42 @@ namespace Cliente
         }
         public void actualizarDatos()
         {
-            string aux = server.recibirDatos();
-            if (aux == "finPartida")
+            try
             {
-                rank = Convert.ToInt32(server.recibirDatos());
+                string aux = server.recibirDatos();
+                if (aux == "finPartida")
+                {
+                    rank = Convert.ToInt32(server.recibirDatos());
+                    playing = false;
+                    return;
+                }
+                int numCartas = Convert.ToInt32(aux);
+                List<Carta> auxLista = new List<Carta>();
+                for (int i = 0; i < numCartas; i++)
+                {
+                    auxLista.Add(
+                        new Carta(
+                            (Carta.eTipo)Enum.Parse(typeof(Carta.eTipo),
+                            server.recibirDatos()),
+                            Convert.ToInt32(server.recibirDatos()),
+                            Convert.ToBoolean(server.recibirDatos())
+                            )
+                        );
+                }
+                int auxValor = Convert.ToInt32(server.recibirDatos());
+                bool auxSentido = Convert.ToBoolean(server.recibirDatos());
+                string auxTurno = server.recibirDatos();
+                Dictionary<string, int> auxDic = new Dictionary<string, int>();
+                int numJugadores = Convert.ToInt32(server.recibirDatos());
+                for (int i = 0; i < numJugadores; i++)
+                {
+                    auxDic.Add(server.recibirDatos(), Convert.ToInt32(server.recibirDatos()));
+                }
+                data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
+            }catch(IOException ex)
+            {
                 playing = false;
-                return;
             }
-            int numCartas = Convert.ToInt32(aux);
-            List<Carta> auxLista = new List<Carta>();
-            for (int i = 0; i < numCartas; i++)
-            {
-                auxLista.Add(
-                    new Carta(
-                        (Carta.eTipo)Enum.Parse(typeof(Carta.eTipo), 
-                        server.recibirDatos()), 
-                        Convert.ToInt32(server.recibirDatos()), 
-                        Convert.ToBoolean(server.recibirDatos())
-                        )
-                    );
-            }
-            int auxValor = Convert.ToInt32(server.recibirDatos());
-            bool auxSentido = Convert.ToBoolean(server.recibirDatos());
-            string auxTurno = server.recibirDatos();
-            Dictionary<string, int> auxDic = new Dictionary<string, int>();
-            int numJugadores = Convert.ToInt32(server.recibirDatos());
-            for (int i = 0; i < numJugadores; i++)
-            {
-                auxDic.Add(server.recibirDatos(), Convert.ToInt32(server.recibirDatos()));
-            }
-            data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
         }
         public void actualizarBaraja()
         {
@@ -313,6 +319,12 @@ namespace Cliente
         public void KeyboardAction(Keys key)
         {
 
+        }
+
+        public void onExiting(object sender, EventArgs args)
+        {
+            server.closeServer();
+            hiloConectividad.Join();
         }
     }
 }

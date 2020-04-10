@@ -140,5 +140,10 @@ namespace Cliente
                 btnInput.Text = btnInput.Text.Remove(btnInput.Text.Length - 1);
             }
         }
+
+        public void onExiting(object sender, EventArgs args)
+        {
+        
+        }
     }
 }

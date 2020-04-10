@@ -10,8 +10,8 @@ namespace ServidorContador
 {
     class Program
     {
-        IPEndPoint ie = new IPEndPoint(IPAddress.Any, 20000);
-        Socket s = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
+        //Socket s = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
+        TcpListener s = new TcpListener(IPAddress.Any, 20000);
         bool serveOpened = false;
         private int contadorSalas = 0;
         Dictionary<int, Sala> salas = new Dictionary<int, Sala>();
@@ -28,8 +28,7 @@ namespace ServidorContador
         {
             try
             {
-                s.Bind(ie);
-                s.Listen(100);
+                s.Start();
                 serveOpened = true;
             }
             catch (SocketException sEx)
@@ -43,12 +42,15 @@ namespace ServidorContador
             while (serveOpened)
             {
                 //Llega un cliente
-                Socket sCliente = s.Accept();
+                TcpClient sCliente = s.AcceptTcpClient();
                 Thread hiloGestionCliente = new Thread(() => gestionCliente(sCliente));
                 hiloGestionCliente.Start();
             }
-            s.Close();
+            s.Stop();
         }
+
+        /*******************************************/
+
         public bool crearSala(Cliente cliente)
         {
             string nombre;
@@ -57,16 +59,18 @@ namespace ServidorContador
             if (nombre.Trim().Length >= 3)
             {
                 //Creo la nueva sala
-                Sala sala = new Sala(contadorSalas, nombre, cliente);
-                sala.AllPlayers = 1;
-                Console.WriteLine("Devuelvo el numero de sala: " + contadorSalas);
-                cliente.enviarDatos(contadorSalas.ToString());
-                //Aumento el identificador para evitar repetir salas
-                contadorSalas++;
-                //Añado la sala a la colección
-                salas.Add(sala.IdSala, sala);
-                Thread hiloSala = new Thread(() => salaEspera(sala));
-                hiloSala.Start();
+                lock (salas)
+                {
+                    Sala sala = new Sala(contadorSalas, nombre, cliente);
+                    Console.WriteLine("Devuelvo el numero de sala: " + contadorSalas);
+                    cliente.enviarDatos(contadorSalas.ToString());
+                    //Aumento el identificador para evitar repetir salas
+                    contadorSalas++;
+                    //Añado la sala a la colección
+                    salas.Add(sala.IdSala, sala);
+                    Thread hiloSala = new Thread(() => salaEspera(sala));
+                    hiloSala.Start();
+                }
                 return true;
             }
             return false;
@@ -76,37 +80,40 @@ namespace ServidorContador
             //Comprueba si la sala a la que quiere entrar existe y si tiene menos de 8 clientes
             int sala = Convert.ToInt32(cliente.recibirDatos());
             string nombre = cliente.recibirDatos();
-            if (salas.ContainsKey(sala) && salas.GetValueOrDefault(sala).Clientes.Count<maxClientes)
+            lock (salas)
             {
-                //cliente.enviarDatos("Escribe tu nombre:");
-                //El cliente entra en la sala
-                lock (salas.GetValueOrDefault(sala)) {
-                    if (salas.GetValueOrDefault(sala).Clientes.ContainsKey(nombre))
+                if (salas.ContainsKey(sala) && salas[sala].Clientes.Count < maxClientes && !salas[sala].Acabado)
+                {
+                    //cliente.enviarDatos("Escribe tu nombre:");
+                    //El cliente entra en la sala
+                    lock (salas[sala])
                     {
-                        Console.WriteLine("Este nombre ya existe");
-                        cliente.enviarDatos("errorNombre");
-                        return false;
+                        if (salas[sala].Clientes.ContainsKey(nombre))
+                        {
+                            Console.WriteLine("Este nombre ya existe");
+                            cliente.enviarDatos("errorNombre");
+                            return false;
+                        }
+                        salas[sala].addCliente(nombre, cliente);
+                        Console.WriteLine($"El cliente {nombre} ha entrado en la sala");
+
+                        cliente.enviarDatos("true");
+                        foreach (Cliente client in salas[sala].Clientes.Values)
+                        {
+                            client.refreshWaitingRoom(salas[sala]);
+                        }
                     }
-                    salas.GetValueOrDefault(sala).addCliente(nombre,cliente);
-                    salas.GetValueOrDefault(sala).AllPlayers++;
-                    Console.WriteLine($"El cliente {nombre} ha entrado en la sala");
-                    
-                    cliente.enviarDatos("true");
-                    foreach(Cliente client in salas.GetValueOrDefault(sala).Clientes.Values)
-                    {
-                        client.refreshWaitingRoom(salas.GetValueOrDefault(sala));
-                    }
+                    return true;
                 }
-                return true;
-            }
-            else
-            {
-                Console.WriteLine($"La sala {sala} no existe");
-                cliente.enviarDatos("errorSala");
-                return false;
+                else
+                {
+                    Console.WriteLine($"La sala {sala} no existe");
+                    cliente.enviarDatos("errorSala");
+                    return false;
+                }
             }
         }
-        public void gestionCliente(Socket socket)
+        public void gestionCliente(TcpClient socket)
         {
             Console.WriteLine("Ha entrado un cliente");
             Cliente cliente = new Cliente(socket);
@@ -149,17 +156,47 @@ namespace ServidorContador
                 }
             } while (!gestionado);
         }
+
+        /*******************************************/
+
+        public void refreshConectedPeople(Sala sala)
+        {
+            while (!sala.Acabado)
+            {
+                lock (sala)
+                {
+                    int initialClients = sala.Clientes.Count;
+                    foreach (var client in sala.Clientes.ToList())
+                    {
+                        if (!client.Value.isConected())
+                        {
+                            sala.deletePlayer(client.Key);
+                            client.Value.desconectar();
+                        }
+                    }
+                    if (initialClients != sala.Clientes.Count)
+                    {
+                        foreach (var client in sala.Clientes)
+                        {
+                            client.Value.refreshWaitingRoom(sala);
+                        }
+                    }
+                }
+                Thread.Sleep(100);
+            }
+        }
         public void salaEspera(Sala sala)
         {
             //TODO
             //Comprobar cuando se va un cliente
-            //¿Qué pasa si se va el host? ¿Cómo se gestiona al resto de clientes?
             Cliente host;
             bool correcto = true;
             lock (sala)
             {
                 host = sala.Clientes.GetValueOrDefault(sala.NombreHost);
             }
+            Thread refreshClientsThread = new Thread(() => refreshConectedPeople(sala));
+            refreshClientsThread.Start();
             do
             {
                 try
@@ -183,41 +220,62 @@ namespace ServidorContador
                                 host.enviarDatos("error");
                             }
                         }
+                    }else if(res == null)
+                    {
+                        deletePlayerOnWaitingRoom(sala, ref host, ref correcto);
                     }
                 }catch(IOException ex)
                 {
-                    lock (sala)
-                    {
-                        if (sala.Clientes.Count <= 1)
-                        {
-                            sala.Acabado = true;
-                            correcto = false;
-                            Console.WriteLine($"Se ha cerrado la sala {sala.IdSala}");
-                        }
-                        else
-                        {
-                            sala.Clientes.Remove(sala.NombreHost);
-                            sala.PlayersNames.Remove(sala.NombreHost);
-                            sala.NombreHost = sala.PlayersNames.First();
-                            host = sala.Clientes.GetValueOrDefault(sala.NombreHost);
-                            sala.AllPlayers--;
-                            foreach(Cliente client in sala.Clientes.Values)
-                            {
-                                client.refreshWaitingRoom(sala);
-                            }
-                            Console.WriteLine($"El nuevo host de la sala {sala.IdSala} es {sala.NombreHost}");
-                            
-                        }
-                    }
+                    deletePlayerOnWaitingRoom(sala, ref host, ref correcto);
                 }
             } while (!sala.Acabado);
+            refreshClientsThread.Join();
             if (correcto)
             {
                 partida(sala);
             }
         }
+        public void deletePlayerOnWaitingRoom(Sala sala,ref Cliente host,ref bool correcto)
+        {
+            lock (sala)
+            {
+                if (sala.Clientes.Count <= 1)
+                {
+                    host.desconectar();
+                    closeRoom(sala);
+                    sala.Acabado = true;
+                    correcto = false;
+                    Console.WriteLine($"Se ha cerrado la sala {sala.IdSala}");
+                }
+                else
+                {
+                    host.desconectar();
+                    sala.Clientes.Remove(sala.NombreHost);
+                    sala.PlayersNames.Remove(sala.NombreHost);
+                    sala.NombreHost = sala.PlayersNames.First();
+                    host = sala.Clientes.GetValueOrDefault(sala.NombreHost);
+                    foreach (Cliente client in sala.Clientes.Values)
+                    {
+                        client.refreshWaitingRoom(sala);
+                    }
+                    Console.WriteLine($"El nuevo host de la sala {sala.IdSala} es {sala.NombreHost}");
+
+                }
+            }
+        }
+        public void closeRoom(Sala sala)
+        {
+            lock (salas)
+            {
+                salas.Remove(sala.IdSala);
+            }
+        }
+
+        /*******************************************/
+
         public void partida(Sala sala)
         {
+            int ranking = 1;
             Partida partida = new Partida();
             int playersInGame = sala.Clientes.Count;
             PaqueteTurno paquete;
@@ -260,22 +318,31 @@ namespace ServidorContador
                                 {
                                     case Carta.eTipo.Numero:
                                         int dif = 0;
+                                        bool overLimit = false;
                                         //En función del sentido de la mesa, sumamos o restamos su valor
                                         if (partida.SentidoMesa)
                                         {
                                             dif = partida.ValorMesa + cartaJugada.Valor;
-                                            if (dif >= partida.Limite) { dif -= partida.Limite; }
+                                            if (dif >= partida.Limite) {
+                                                overLimit = true;
+                                                dif -= partida.Limite; 
+                                            }
                                         }
                                         else
                                         {
                                             dif = partida.ValorMesa - cartaJugada.Valor;
-                                            if (dif <= -partida.Limite) { dif += partida.Limite; }
+                                            if (dif <= -partida.Limite) {
+                                                overLimit = true;
+                                                dif += partida.Limite; 
+                                            }
                                         }
+                                        Console.WriteLine("El límite de la mesa es: " + partida.Limite);
+                                        Console.WriteLine($"La operación es: {partida.ValorMesa}+{cartaJugada.Valor}={cartaJugada.Valor+partida.ValorMesa}");
+                                        partida.ValorMesa = dif;
                                         //Si el jugador sobrepasa el límite, se reinicia el valor de mesa y se
                                         //añaden 3 cartas a su baraja.
-                                        if (partida.ValorMesa >= partida.Limite || partida.ValorMesa <= -partida.Limite)
+                                        if (overLimit)
                                         {
-                                            partida.ValorMesa = 0;
                                             for (int i = 0; i < 3; i++)
                                             {
                                                 partida.BarajasJugadores[partida.Turno].Add(cartaRandom());
@@ -311,7 +378,7 @@ namespace ServidorContador
                         string adiosJugador = null;
                         if (partida.BarajasJugadores[partida.Turno].Count <= 0)
                         {
-                            finishPlayer(partida, sala, nombresJugadores, false);
+                            finishPlayer(partida, sala, nombresJugadores, false,ref ranking);
                         }
                         else
                         {
@@ -327,7 +394,8 @@ namespace ServidorContador
                 //En caso de no tener, guardo su nombre para borrarlo de la
                 //lista de nombres de jugadores y borrarlo como cliente de la sala.
             } while (!partidaAcabada);
-            finishPlayer(partida, sala, nombresJugadores, true);
+            finishPlayer(partida, sala, nombresJugadores, true,ref ranking);
+            closeRoom(sala);
         }
         public void sendCards(Partida partida,Sala sala)
         {
@@ -365,7 +433,7 @@ namespace ServidorContador
         }
         public void deleteDisconnectedPlayer(string cliente, Partida partida, Sala sala, List<string> nombresJugadores)
         {
-            sala.AllPlayers--;
+            sala.Clientes[partida.Turno].desconectar();
             sala.Clientes.Remove(cliente);
             if (partida.Turno == cliente)
             {
@@ -374,13 +442,14 @@ namespace ServidorContador
             partida.BarajasJugadores.Remove(cliente);
             nombresJugadores.Remove(cliente);
         }
-        public void finishPlayer(Partida partida,Sala sala,List<string> nombresJugadores,bool lastPlayer)
+        public void finishPlayer(Partida partida,Sala sala,List<string> nombresJugadores,bool lastPlayer,ref int ranking)
         {
             string leavingPlayer = partida.Turno;
             try
             {
                 sala.Clientes[partida.Turno].enviarDatos("finPartida");
-                sala.Clientes[partida.Turno].enviarDatos("" + (sala.AllPlayers - sala.Clientes.Count + 1));
+                sala.Clientes[partida.Turno].enviarDatos(ranking+"");
+                ranking++;
                 sala.Clientes[partida.Turno].desconectar();
             }catch(IOException ex)
             {

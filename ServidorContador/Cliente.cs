@@ -12,12 +12,12 @@ namespace ServidorContador
         NetworkStream ns;
         StreamReader sr;
         StreamWriter sw;
-        Socket socket;
+        public TcpClient socket;
 
-        public Cliente(Socket socketCliente)
+        public Cliente(TcpClient socketCliente)
         {
             socket = socketCliente;
-            ns = new NetworkStream(socketCliente);
+            ns = socket.GetStream();
             sr = new StreamReader(ns);
             sw = new StreamWriter(ns);
         }
@@ -26,17 +26,13 @@ namespace ServidorContador
             sw.WriteLine(datos);
             sw.Flush();
         }
+        public bool isConected()
+        {
+            return !(socket.Client.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+        }
         public string recibirDatos()
         {
             return sr.ReadLine();
-        }
-        public string getIP()
-        {
-            return socket.RemoteEndPoint.ToString();
-        }
-        public void enviarPaquete(PaqueteTurno paquete)
-        {
-
         }
         public void enviarCarta(Carta carta)
         {

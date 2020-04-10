@@ -142,5 +142,18 @@
 #### Modificaciones
 * La clase **Sala** contiene la variable que guarda cuantos jugadores han entrado y han jugado durante toda la partida. Se va actualizando.
 * El servidor gestiona la desconexión inesperada de clientes. Se han modificado los valores de los puertos y las direcciones de los Socket de clientes para lanzar el servidor online.
+* Cuando al jugar una carta númerica, el valor sobrepasa el límite no se inicializa a 0, sino a la diferencia del limite menos el valor resultante.
 #### Avances
 * Supuestamente, la aplicación es funcional y la base está acabada.
+***
+## 11/04/2020
+#### Modificaciones
+* Nueva función en la interfaz **Pantalla** para gestionar el cierre de la aplicación por parte del usuario.
+* Sincronización de todos los hilos del proyecto para evitar dejarlos en funcionamiento infinito.
+* El servidor utiliza la clase **TcpListener** en lugar de la clase **Socket** empleada hasta el momento para mayor facilidad comunicandose con el **TcpClient** del cliente.
+* Creado nuevo hilo durante la sala de espera para comprobar qué jugadores están o no conectados.
+* La clase **Cliente** del servidor cuenta con la función `isConected()` para facilitar la comprobación de su estado actual.
+* Eliminación de funciones a las que no se llaman que en un principio se pensaron tendrían utilidad (como `enviarPaquete(PaqueteTurno paquete)`).
+#### Avances
+* Controlada la creación y destrucción de salas, así como cuando dejan de aceptarse nuevos jugadores.
+* **Sala Espera** se actualiza a tiempo real permitiendo ver qué jugadores han entrado en la sala y quienes se han ido.

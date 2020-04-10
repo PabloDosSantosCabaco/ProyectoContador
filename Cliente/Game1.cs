@@ -172,5 +172,12 @@ namespace Cliente
             p.Draw(gameTime);
             base.Draw(gameTime);
         }
+        protected override void OnExiting(object sender, EventArgs args)
+        {
+            Console.WriteLine("Llamando onExiting");
+            p.onExiting(sender,args);
+            Exit();
+            base.OnExiting(sender, args);
+        }
     }
 }

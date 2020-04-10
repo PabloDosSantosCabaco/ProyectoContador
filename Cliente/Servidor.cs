@@ -17,23 +17,19 @@ namespace Cliente
         StreamReader sr;
         public Servidor()
         {
-            for (int i = 31416; i < 31420; i++)
+            try
             {
-                try
-                {
-                    client = new TcpClient("javi.ink", 20000);
-                    conectado = true;
-                    ns = client.GetStream();
-                    sr = new StreamReader(ns);
-                    sw = new StreamWriter(ns);
-                    break;
-                }
-                catch (SocketException ex)
-                {
-
-                }
-                conectado = false;
+                client = new TcpClient("127.0.0.1", 20000);
+                conectado = true;
+                ns = client.GetStream();
+                sr = new StreamReader(ns);
+                sw = new StreamWriter(ns);
             }
+            catch (SocketException ex)
+            {
+
+            }
+            conectado = false;
         }
         public void closeServer()
         {

@@ -201,5 +201,10 @@ namespace Cliente
                 focused.Text = focused.Text.Remove(focused.Text.Length - 1);
             }
         }
+
+        public void onExiting(object sender, EventArgs args)
+        {
+
+        }
     }
 }
