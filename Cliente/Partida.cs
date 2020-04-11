@@ -31,8 +31,8 @@ namespace Cliente
         //Boton jugar y botón pasar
         Boton btnPlay;
         Boton btnPass;
-        Texture2D imgBtnPlay;
-        Texture2D imgBtnPass;
+        Boton btnNextCard;
+        Boton btnPreviousCard;
         int selectedCard;
         //Definen el ancho y alto de la ventana
         public float ScreenWidth { get; set; }
@@ -63,29 +63,31 @@ namespace Cliente
             playersAtBegin = players;
             cartasBtn = new List<Boton>();
             cartas = new Dictionary<string, Texture2D>();
+            data = null;
         }
 
         public void Draw(GameTime gameTime)
         {
             game.spriteBatch.Begin();
-            dibujarMesa();
-            dibujarMarcadores();
-            dibujarTurno();
-            dibujarBotones();
-            if (selectedCard != -1)
+            if (data != null)
             {
-                btnSelectedCard.draw(game);
+                dibujarMesa();
+                dibujarMarcadores();
+                dibujarTurno();
+                dibujarBotones();
+                if (selectedCard != -1)
+                {
+                    btnSelectedCard.draw(game);
+                }
+                dibujarCartas();
             }
-            dibujarCartas();
             game.spriteBatch.End();
         }   
 
         public void Initialize()
         {
             selectedCard = -1;
-            actualizarDatos();
-            hiloConectividad = new Thread(() => comprobarTurno());
-            hiloConectividad.Start();
+            //actualizarDatos();
             //Al empezar el jugador está jugando
             finish = false;
             rank = 0;
@@ -110,13 +112,14 @@ namespace Cliente
             font = game.Content.Load<SpriteFont>("Fuentes/Fuente");
             fontValue = game.Content.Load<SpriteFont>("Fuentes/FuenteValor");
             exampleCard = cartas["3"];
-
-            imgBtnPlay = game.Content.Load<Texture2D>("Sprites/btnJugar");
-            imgBtnPass = game.Content.Load<Texture2D>("Sprites/btnPasar");
-            actualizarBaraja();
-            btnPlay = new Boton(ScreenWidth / 2 - ScreenWidth / 8, ScreenHeight / 2, imgBtnPlay, ScreenWidth / 8);
-            btnPass = new Boton(ScreenWidth / 2, ScreenHeight / 2, imgBtnPass, ScreenWidth / 8);
+            cardPosition = new Vector2(column / 10, ScreenHeight * 7 / 8 - exampleCard.Height / 2);
+            btnPlay = new Boton(ScreenWidth / 2 - ScreenWidth / 8, ScreenHeight / 2, game.Content.Load<Texture2D>("Sprites/btnJugar"), ScreenWidth / 8);
+            btnPass = new Boton(ScreenWidth / 2, ScreenHeight / 2, game.Content.Load<Texture2D>("Sprites/btnPasar"), ScreenWidth / 8);
+            btnNextCard = new Boton(ScreenWidth - ScreenWidth / 15, ScreenHeight - ScreenWidth / 15, game.Content.Load<Texture2D>("Sprites/btnNextCard"), ScreenWidth / 15);
+            btnPreviousCard = new Boton(0, ScreenHeight - ScreenWidth / 15, game.Content.Load<Texture2D>("Sprites/btnPreviousCard"), ScreenWidth / 15);
             btnSelectedCard = new Boton(0, 0, cartas["selectedCard"], column);
+            hiloConectividad = new Thread(() => comprobarTurno());
+            hiloConectividad.Start();
         }
 
         public Pantalla Update(GameTime gameTime)
@@ -134,9 +137,15 @@ namespace Cliente
                 ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
                 column = ScreenWidth / maxCards;
             }
-            //Para cada carta del jugador, se carga su correspondiente imagen
-            actualizarBaraja();
+            centerCards();
             return this;
+        }
+        public void centerCards()
+        {
+            if (cartasBtn.Count <= maxCards)
+            {
+                cardPosition.X = column / 10;
+            }
         }
         public void comprobarTurno()
         {
@@ -179,11 +188,13 @@ namespace Cliente
                     auxDic.Add(server.recibirDatos(), Convert.ToInt32(server.recibirDatos()));
                 }
                 data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
+                actualizarBaraja();
             }catch(IOException ex)
             {
                 playing = false;
             }
         }
+        
         public void actualizarBaraja()
         {
             cartasBtn.Clear();
@@ -210,24 +221,61 @@ namespace Cliente
                         break;
                 }
                 cartasBtn.Add(new Boton(0, 0, cartas[nombre], column * 8 / 10));
-                cardPosition = new Vector2(column / 10, ScreenHeight / 2 + column * 8 / 10 / 2);
-                foreach (Boton btn in cartasBtn)
+            }
+            if (cartasBtn.Count <= maxCards)
+            {
+                cardPosition.X = column / 10;
+            }
+            foreach (Boton btn in cartasBtn)
+            {
+                btn.X = cardPosition.X;
+                btn.Y = cardPosition.Y;
+                cardPosition.X += column;
+            }
+            cardPosition.X -= column * cartasBtn.Count;
+        }
+        public void moveCards(bool avanzar)
+        {
+            if (avanzar)
+            {
+                if (cartasBtn[cartasBtn.Count - 1].X > ScreenWidth)
                 {
-                    btn.X = cardPosition.X;
-                    btn.Y = cardPosition.Y;
+                    foreach(Boton card in cartasBtn)
+                    {
+                        card.X -= column;
+                    }
+                    btnSelectedCard.X -= column;
+                    cardPosition.X -= column;
+                }
+            }
+            else
+            {
+                if (cartasBtn[0].X < 0)
+                {
+                    foreach (Boton card in cartasBtn)
+                    {
+                        card.X += column;
+                    }
+                    btnSelectedCard.X += column;
                     cardPosition.X += column;
                 }
             }
         }
         public void dibujarBotones()
         {
-            game.spriteBatch.Draw(btnPlay.Img, position: new Vector2(ScreenWidth / 2 - btnPlay.Width, ScreenHeight / 2), scale: btnPlay.Scale);
-            game.spriteBatch.Draw(btnPass.Img, position: new Vector2(ScreenWidth / 2, ScreenHeight / 2), scale: btnPass.Scale);
+            game.spriteBatch.Draw(btnPlay.Img, position: new Vector2(btnPlay.X, btnPlay.Y), scale: btnPlay.Scale);
+            game.spriteBatch.Draw(btnPass.Img, position: new Vector2(btnPass.X, btnPass.Y), scale: btnPass.Scale);
+            if (cartasBtn[0].X < 0)
+            {
+                game.spriteBatch.Draw(btnPreviousCard.Img, position: new Vector2(btnPreviousCard.X, btnPreviousCard.Y), scale: btnPreviousCard.Scale);
+            }
+            if (cartasBtn[cartasBtn.Count - 1].X > ScreenWidth)
+            {
+                game.spriteBatch.Draw(btnNextCard.Img, position: new Vector2(btnNextCard.X, btnNextCard.Y), scale: btnNextCard.Scale);
+            }
         }
         public void dibujarCartas()
         {
-            //Estableceemos donde empezarán a dibujarse 
-            cardPosition = new Vector2(column / 10, ScreenHeight / 2 + column * 8 / 10 / 2);
             //Dibujado de las cartas
             foreach (Boton btn in cartasBtn)
             {
@@ -273,6 +321,7 @@ namespace Cliente
                 {
                     game.efectos[Game1.eSonidos.overCount].Play();
                     server.enviarDatos("pasar");
+                    selectedCard = -1;
                 }
                 if (btnPlay.click(Mouse.GetState().X, Mouse.GetState().Y) && selectedCard != -1)
                 {
@@ -300,8 +349,16 @@ namespace Cliente
                     server.enviarDatos(data.Cartas[selectedCard].Tipo.ToString());
                     server.enviarDatos(data.Cartas[selectedCard].Valor.ToString());
                     server.enviarDatos(data.Cartas[selectedCard].Sentido.ToString());
+                    selectedCard = -1;
                 }
-                selectedCard = -1;
+            }
+            if (btnNextCard.click(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                moveCards(true);
+            }
+            if (btnPreviousCard.click(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                moveCards(false);
             }
             foreach (Boton btn in cartasBtn)
             {

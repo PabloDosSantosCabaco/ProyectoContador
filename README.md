@@ -157,3 +157,11 @@
 #### Avances
 * Controlada la creación y destrucción de salas, así como cuando dejan de aceptarse nuevos jugadores.
 * **Sala Espera** se actualiza a tiempo real permitiendo ver qué jugadores han entrado en la sala y quienes se han ido.
+***
+## 11/04/2020
+#### Nuevo
+* En la clase **Partida** del **Cliente** existen dos botones que permiten ver toda la baraja aun cuando hay más de 8 cartas (número máximo de cartas mostradas por pantalla).
+* Intercambio entre inputs de la clase **PantallaUnir** mediante la tecla tabulador. Próximamente implementaré la tecla Enter para simular el click en aceptar.
+#### Modificaciones
+* La función `actualizarBaraja()` en **Partida** se ejecuta solo cuando recibe nuevos datos y no en el `Update()` como se había hecho hasta ahora.
+* Nuevas funciones encargadas de desplazarse por la baraja y de centrar las cartas cuando hay menos o tantas como las que se pueden mostrar por pantalla.

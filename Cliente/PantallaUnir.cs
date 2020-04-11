@@ -196,6 +196,27 @@ namespace Cliente
             {
                 focused.Text = compruebaNombre(" ", focused);
             }
+            else if (key == Keys.Tab)
+            {
+                if (focused == txtInputName)
+                {
+                    changeFocus(txtInputRoom);
+                }
+                else
+                {
+                    changeFocus(txtInputName);
+                }
+                foreach (TextBox input in inputs)
+                {
+                    if (input.Focus)
+                    {
+                        focused = input;
+                    }
+                }
+            }
+            else if (key == Keys.Enter) { 
+            
+            }
             if (key == Keys.Back && focused.Text.Length >= 1)
             {
                 focused.Text = focused.Text.Remove(focused.Text.Length - 1);

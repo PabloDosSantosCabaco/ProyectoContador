@@ -281,7 +281,7 @@ namespace ServidorContador
             PaqueteTurno paquete;
             List<string> nombresJugadores = new List<string>();
             bool partidaAcabada = false;
-            int maxCards = 5;
+            int maxCards = 8;
             Console.WriteLine("Generando info");
             foreach(var cl in sala.Clientes)
             {

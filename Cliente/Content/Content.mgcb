@@ -215,6 +215,18 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/btnJugar.png
 
+#begin Sprites/btnNextCard.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/btnNextCard.png
+
 #begin Sprites/btnPasar.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -226,6 +238,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/btnPasar.png
+
+#begin Sprites/btnPreviousCard.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/btnPreviousCard.png
 
 #begin Sprites/btnRepeat.png
 /importer:TextureImporter
