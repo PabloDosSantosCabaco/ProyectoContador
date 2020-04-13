@@ -27,7 +27,6 @@ namespace Cliente
         public int ScreenHeight { get; set; }
         Dictionary<Keys, bool> keys = new Dictionary<Keys, bool>();
         bool error;
-        bool mouseClick;
         public PantallaCrear(Game1 game)
         {
             this.game = game;
@@ -63,7 +62,6 @@ namespace Cliente
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             intro = "Introduce tu nombre:";
             error = false;
-            mouseClick = false;
             errorMsg = "Introduce un nombre de al menos 3 caracteres";
         }
 
@@ -108,22 +106,26 @@ namespace Cliente
             }
             if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
             {
-                if (btnInput.Text.Trim().Length < 3)
-                {
-                    error = true;
-                }
-                else
-                {
-                    //Pedir numero sala al servidor
-                    game.efectos[Game1.eSonidos.click].Play();
-                    Servidor servidor = new Servidor();
-                    return new SalaEspera(game, servidor.getSala(btnInput.Text), btnInput.Text, servidor, true);
-                }
+                return goNext();
             }
             return this;
         }
-
-        public void KeyboardAction(Keys key)
+        public Pantalla goNext()
+        {
+            if (btnInput.Text.Trim().Length < 3)
+            {
+                error = true;
+            }
+            else
+            {
+                //Pedir numero sala al servidor
+                game.efectos[Game1.eSonidos.click].Play();
+                Servidor servidor = new Servidor();
+                return new SalaEspera(game, servidor.getSala(btnInput.Text), btnInput.Text, servidor, true);
+            }
+            return this;
+        }
+        public Pantalla KeyboardAction(Keys key)
         {
             if (key >= Keys.A && key <= Keys.Z ||
                 (key >= Keys.D0 && key <= Keys.D9) ||
@@ -134,11 +136,15 @@ namespace Cliente
             else if (key == Keys.Space)
             {
                 btnInput.Text = compruebaNombre(" ");
+            }else if(key == Keys.Enter)
+            {
+                return goNext();
             }
             if (key == Keys.Back && btnInput.Text.Length >= 1)
             {
                 btnInput.Text = btnInput.Text.Remove(btnInput.Text.Length - 1);
             }
+            return this;
         }
 
         public void onExiting(object sender, EventArgs args)

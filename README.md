@@ -165,3 +165,11 @@
 #### Modificaciones
 * La función `actualizarBaraja()` en **Partida** se ejecuta solo cuando recibe nuevos datos y no en el `Update()` como se había hecho hasta ahora.
 * Nuevas funciones encargadas de desplazarse por la baraja y de centrar las cartas cuando hay menos o tantas como las que se pueden mostrar por pantalla.
+***
+## 13/04/2020
+#### Modificaciones
+* La clase **Sala** pasa a tener en ella un objeto de tipo **Partida** para poder acceder desde un único objeto a toda la información de una sesión de juego.
+* La función `KeyboardAction(Keys key)` interfaz **Pantalla** devuelve ahora un objeto tipo Pantalla que nos permite movernos entre escenas a través de acciones de teclado.
+* Creación de otro hilo paralelo a la partida encargado de comprobar la desconexión de los jugadores e informar al resto actualizando sus datos sobre el juego.
+#### Avances
+* Controlada la desconexión de todo tipo de clientes en todo tipo de casos.

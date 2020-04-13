@@ -20,7 +20,6 @@ namespace Cliente
         Texture2D imgStart;
         Boton btnStart;
         bool host;
-        bool mouseClick;
         bool waitingRoomActive;
         string name;
         string room;
@@ -112,7 +111,6 @@ namespace Cliente
             ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             room = "Numero de sala:";
-            mouseClick = false;
         }
 
         public void LoadContent()
@@ -142,9 +140,14 @@ namespace Cliente
             return this;
         }
 
-        public void KeyboardAction(Keys key)
+        public Pantalla KeyboardAction(Keys key)
         {
-
+            if(host && key == Keys.Enter && players.Count >= 2)
+            {
+                game.efectos[Game1.eSonidos.click].Play();
+                server.enviarDatos("empezar");
+            }
+            return this;
         }
 
         public void onExiting(object sender, EventArgs args)

@@ -15,7 +15,7 @@ namespace Cliente
         Pantalla Update(GameTime gameTime);
         void Draw(GameTime gameTime);
         Pantalla Click();
-        void KeyboardAction(Keys key);
+        Pantalla KeyboardAction(Keys key);
         void onExiting(object sender, EventArgs args);
     }
 }

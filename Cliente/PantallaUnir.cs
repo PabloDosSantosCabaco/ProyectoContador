@@ -120,6 +120,43 @@ namespace Cliente
                 input.Focus = input == newFocus ? true : false;
             }
         }
+        public Pantalla goNext()
+        {
+            errorNombre = false;
+            errorSala = false;
+            if (txtInputName.Text.Length >= 3 && txtInputRoom.Text.Length > 0)
+            {
+                //Mandar al servidor y comprobar que existe dicha sala pero dentro de ella no dicho nombre
+                Servidor servidor = new Servidor();
+                servidor.enviarDatos("join");
+                servidor.enviarDatos(txtInputRoom.Text);
+                servidor.enviarDatos(txtInputName.Text);
+                switch (servidor.recibirDatos())
+                {
+                    case "true":
+                        game.efectos[Game1.eSonidos.click].Play();
+                        return new SalaEspera(game, Convert.ToInt32(txtInputRoom.Text), txtInputName.Text, servidor, false);
+                    case "errorNombre":
+                        errorSala = false;
+                        errorNombre = true;
+                        break;
+                    case "errorSala":
+                        errorNombre = false;
+                        errorSala = true;
+                        break;
+                }
+                servidor.closeServer();
+            }
+            if (txtInputName.Text.Length < 3)
+            {
+                errorNombre = true;
+            }
+            if (txtInputRoom.Text.Length <= 0)
+            {
+                errorSala = true;
+            }
+            return this;
+        }
         public Pantalla Click()
         {
             if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
@@ -129,39 +166,7 @@ namespace Cliente
             }
             if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
             {
-                errorNombre = false;
-                errorSala = false;
-                if (txtInputName.Text.Length >= 3 && txtInputRoom.Text.Length > 0)
-                {
-                    //Mandar al servidor y comprobar que existe dicha sala pero dentro de ella no dicho nombre
-                    Servidor servidor = new Servidor();
-                    servidor.enviarDatos("join");
-                    servidor.enviarDatos(txtInputRoom.Text);
-                    servidor.enviarDatos(txtInputName.Text);
-                    switch (servidor.recibirDatos())
-                    {
-                        case "true":
-                            game.efectos[Game1.eSonidos.click].Play();
-                            return new SalaEspera(game, Convert.ToInt32(txtInputRoom.Text), txtInputName.Text, servidor, false);
-                        case "errorNombre":
-                            errorSala = false;
-                            errorNombre = true;
-                            break;
-                        case "errorSala":
-                            errorNombre = false;
-                            errorSala = true;
-                            break;
-                    }
-                    servidor.closeServer();
-                }
-                if (txtInputName.Text.Length < 3)
-                {
-                    errorNombre = true;
-                }
-                if (txtInputRoom.Text.Length <= 0)
-                {
-                    errorSala = true;
-                }
+                return goNext();
             }
             if (txtInputName.click(Mouse.GetState().X, Mouse.GetState().Y))
             {
@@ -181,7 +186,7 @@ namespace Cliente
             return this;
         }
 
-        public void KeyboardAction(Keys key)
+        public Pantalla KeyboardAction(Keys key)
         {
             if ((key >= Keys.A && key <= Keys.Z) ||
                         (key >= Keys.D0 && key <= Keys.D9) ||
@@ -214,13 +219,14 @@ namespace Cliente
                     }
                 }
             }
-            else if (key == Keys.Enter) { 
-            
+            else if (key == Keys.Enter) {
+                return goNext();
             }
             if (key == Keys.Back && focused.Text.Length >= 1)
             {
                 focused.Text = focused.Text.Remove(focused.Text.Length - 1);
             }
+            return this;
         }
 
         public void onExiting(object sender, EventArgs args)

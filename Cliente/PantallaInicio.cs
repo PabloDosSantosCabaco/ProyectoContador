@@ -75,9 +75,9 @@ namespace Cliente
             return this;
         }
 
-        public void KeyboardAction(Keys key)
+        public Pantalla KeyboardAction(Keys key)
         {
-
+            return this;
         }
 
         public void onExiting(object sender, EventArgs args)

@@ -59,9 +59,14 @@ namespace Cliente
             return this;
         }
 
-        public void KeyboardAction(Keys key)
+        public Pantalla KeyboardAction(Keys key)
         {
-
+            if (key == Keys.Enter)
+            {
+                game.efectos[Game1.eSonidos.click].Play();
+                return new PantallaInicio(game);
+            }
+            return this;
         }
 
         public void onExiting(object sender, EventArgs args)

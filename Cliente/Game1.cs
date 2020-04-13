@@ -134,7 +134,17 @@ namespace Cliente
                 {
                     if (!clickIntervention)
                     {
-                        p.KeyboardAction(Keyboard.GetState().GetPressedKeys()[i]);
+                        if (this.IsActive)
+                        {
+                            Pantalla pAux = p;
+                            p = p.KeyboardAction(Keyboard.GetState().GetPressedKeys()[i]);
+                            if (p != pAux)
+                            {
+                                p.Initialize();
+                                p.LoadContent();
+                            }
+                        }
+                        
                     }
                 }
                 keys[Keyboard.GetState().GetPressedKeys()[i]] = true;

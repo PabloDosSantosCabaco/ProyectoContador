@@ -12,12 +12,16 @@ namespace ServidorContador
         public List<string> PlayersNames { get; set; } = new List<string>();
         public Dictionary<string, Cliente> Clientes { get; set; } = new Dictionary<string, Cliente>();
         public int IdSala { get; }
-        public bool Acabado { get; set; }
+        public bool WaitingRoomFinished { get; set; }
+        public bool GameFinished { get; set; }
         public string NombreHost { get; set; }
+        public Partida Partida { get; set; }
 
         public Sala(int idSala,string nombre,Cliente host)
         {
             IdSala = idSala;
+            WaitingRoomFinished = false;
+            GameFinished = false;
             Clientes.Add(nombre, host);
             PlayersNames.Add(nombre);
             NombreHost = nombre;
@@ -31,6 +35,17 @@ namespace ServidorContador
         {
             Clientes.Remove(nombre);
             PlayersNames.Remove(nombre);
+            if (Partida != null) {
+                Partida.BarajasJugadores.Remove(nombre);
+                if (Partida.Turno == nombre)
+                {
+                    Partida.Turno = PlayersNames.IndexOf(nombre) + 1 >= PlayersNames.Count ? PlayersNames[0] : PlayersNames[PlayersNames.IndexOf(nombre) + 1];
+                }
+            }
+        }
+        public void avanzarTurno()
+        {
+            Partida.Turno = PlayersNames.IndexOf(Partida.Turno) + 1 >= PlayersNames.Count ? PlayersNames[0] : PlayersNames[PlayersNames.IndexOf(Partida.Turno) + 1];
         }
     }
 }
