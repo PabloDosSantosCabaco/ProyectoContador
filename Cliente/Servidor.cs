@@ -11,25 +11,16 @@ namespace Cliente
     class Servidor
     {
         TcpClient client;
-        bool conectado;
         NetworkStream ns;
         StreamWriter sw;
         StreamReader sr;
+
         public Servidor()
         {
-            try
-            {
-                client = new TcpClient("127.0.0.1", 20000);
-                conectado = true;
-                ns = client.GetStream();
-                sr = new StreamReader(ns);
-                sw = new StreamWriter(ns);
-            }
-            catch (SocketException ex)
-            {
-
-            }
-            conectado = false;
+            client = new TcpClient("127.0.0.1", 20000);
+            ns = client.GetStream();
+            sr = new StreamReader(ns);
+            sw = new StreamWriter(ns);
         }
         public void closeServer()
         {

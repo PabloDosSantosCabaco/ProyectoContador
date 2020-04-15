@@ -17,13 +17,19 @@ namespace Cliente
         public Texture2D ImgCreate { get; set; }
         public int ScreenWidth { get; set; }
         public int ScreenHeight { get; set; }
+        public string MsgError;
         public Game1 game;
-        bool mouseClick = false;
         SpriteFont font;
+        SpriteFont errorFont;
 
-        public PantallaInicio(Game1 game)
+        public PantallaInicio(Game1 game):this(game,null)
+        {
+            
+        }
+        public PantallaInicio(Game1 game, string msg)
         {
             this.game = game;
+            MsgError = msg;
         }
 
         public void Initialize()
@@ -35,6 +41,7 @@ namespace Cliente
         public void LoadContent()
         {
             font = game.Content.Load<SpriteFont>("Fuentes/FuenteValor");
+            errorFont = game.Content.Load<SpriteFont>("Fuentes/Error");
             ImgJoin = game.Content.Load<Texture2D>("Sprites/btnUnir");
             ImgCreate = game.Content.Load<Texture2D>("Sprites/btnCrear");
             BtnJoin = new Boton(ScreenWidth / 2 - ScreenWidth / 6, ScreenHeight /2, ImgJoin, ScreenWidth / 3);
@@ -49,6 +56,14 @@ namespace Cliente
         public void Draw(GameTime gameTime)
         {
             game.spriteBatch.Begin();
+            if (MsgError != null)
+            {
+                game.spriteBatch.DrawString(
+                    errorFont,
+                    MsgError,
+                    new Vector2(ScreenWidth/2- errorFont.MeasureString(MsgError).X/2,ScreenHeight*2/5),
+                    Color.Red);
+            }
             game.spriteBatch.DrawString(
                 font, 
                 "Contador", 

@@ -173,3 +173,7 @@
 * Creación de otro hilo paralelo a la partida encargado de comprobar la desconexión de los jugadores e informar al resto actualizando sus datos sobre el juego.
 #### Avances
 * Controlada la desconexión de todo tipo de clientes en todo tipo de casos.
+***
+## 15/04/2020
+#### Avances
+* Controlada la caída del servidor en cualquier parte de la aplicación. El juego es completamente funcional, de ahora en adelante seguiré con la optimización del código, aumento de funcionalidad y/o nuevas reglas.

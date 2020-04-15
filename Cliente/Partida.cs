@@ -21,7 +21,7 @@ namespace Cliente
         string name;
         bool playing;
         int rank;
-        int playersAtBegin;
+        bool serverDown;
 
         //Imagenes cartas
         Dictionary<string, Texture2D> cartas;
@@ -60,7 +60,7 @@ namespace Cliente
             this.server = server;
             this.name = name;
             playing = true;
-            playersAtBegin = players;
+            serverDown = false;
             cartasBtn = new List<Boton>();
             cartas = new Dictionary<string, Texture2D>();
             data = null;
@@ -118,7 +118,7 @@ namespace Cliente
             btnNextCard = new Boton(ScreenWidth - ScreenWidth / 15, ScreenHeight - ScreenWidth / 15, game.Content.Load<Texture2D>("Sprites/btnNextCard"), ScreenWidth / 15);
             btnPreviousCard = new Boton(0, ScreenHeight - ScreenWidth / 15, game.Content.Load<Texture2D>("Sprites/btnPreviousCard"), ScreenWidth / 15);
             btnSelectedCard = new Boton(0, 0, cartas["selectedCard"], column);
-            hiloConectividad = new Thread(() => comprobarTurno());
+            hiloConectividad = new Thread(() => actualizarDatos());
             hiloConectividad.Start();
         }
 
@@ -129,6 +129,12 @@ namespace Cliente
                 server.closeServer();
                 hiloConectividad.Join();
                 return new FinPartida(game, rank);
+            }
+            if (serverDown)
+            {
+                server.closeServer();
+                hiloConectividad.Join();
+                return new PantallaInicio(game, "Se ha perdido la conexion con el servidor");
             }
             //Si la ventana del juego cambia sus dimensiones, se adaptan los tamaños de los objetos
             if (game.graphics.GraphicsDevice.Viewport.Width != ScreenWidth || game.graphics.GraphicsDevice.Viewport.Height != ScreenHeight)
@@ -147,51 +153,47 @@ namespace Cliente
                 cardPosition.X = column / 10;
             }
         }
-        public void comprobarTurno()
-        {
-            while (playing)
-            {
-                actualizarDatos();
-            }
-        }
         public void actualizarDatos()
         {
             try
             {
-                string aux = server.recibirDatos();
-                if (aux == "finPartida")
+                while (playing)
                 {
-                    rank = Convert.ToInt32(server.recibirDatos());
-                    playing = false;
-                    return;
+                    string aux = server.recibirDatos();
+                    if (aux == "finPartida")
+                    {
+                        rank = Convert.ToInt32(server.recibirDatos());
+                        playing = false;
+                        return;
+                    }
+                    int numCartas = Convert.ToInt32(aux);
+                    List<Carta> auxLista = new List<Carta>();
+                    for (int i = 0; i < numCartas; i++)
+                    {
+                        auxLista.Add(
+                            new Carta(
+                                (Carta.eTipo)Enum.Parse(typeof(Carta.eTipo),
+                                server.recibirDatos()),
+                                Convert.ToInt32(server.recibirDatos()),
+                                Convert.ToBoolean(server.recibirDatos())
+                                )
+                            );
+                    }
+                    int auxValor = Convert.ToInt32(server.recibirDatos());
+                    bool auxSentido = Convert.ToBoolean(server.recibirDatos());
+                    string auxTurno = server.recibirDatos();
+                    Dictionary<string, int> auxDic = new Dictionary<string, int>();
+                    int numJugadores = Convert.ToInt32(server.recibirDatos());
+                    for (int i = 0; i < numJugadores; i++)
+                    {
+                        auxDic.Add(server.recibirDatos(), Convert.ToInt32(server.recibirDatos()));
+                    }
+                    data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
+                    actualizarBaraja();
                 }
-                int numCartas = Convert.ToInt32(aux);
-                List<Carta> auxLista = new List<Carta>();
-                for (int i = 0; i < numCartas; i++)
-                {
-                    auxLista.Add(
-                        new Carta(
-                            (Carta.eTipo)Enum.Parse(typeof(Carta.eTipo),
-                            server.recibirDatos()),
-                            Convert.ToInt32(server.recibirDatos()),
-                            Convert.ToBoolean(server.recibirDatos())
-                            )
-                        );
-                }
-                int auxValor = Convert.ToInt32(server.recibirDatos());
-                bool auxSentido = Convert.ToBoolean(server.recibirDatos());
-                string auxTurno = server.recibirDatos();
-                Dictionary<string, int> auxDic = new Dictionary<string, int>();
-                int numJugadores = Convert.ToInt32(server.recibirDatos());
-                for (int i = 0; i < numJugadores; i++)
-                {
-                    auxDic.Add(server.recibirDatos(), Convert.ToInt32(server.recibirDatos()));
-                }
-                data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
-                actualizarBaraja();
             }catch(IOException ex)
             {
-                playing = false;
+                serverDown = true;
             }
         }
         

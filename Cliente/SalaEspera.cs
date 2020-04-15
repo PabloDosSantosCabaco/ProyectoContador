@@ -25,10 +25,10 @@ namespace Cliente
         string room;
         List<string> players = new List<string>();
         SpriteFont font;
-        SpriteFont errorFont;
         public int ScreenWidth { get; set; }
         public int ScreenHeight { get; set; }
         int numberRoom;
+        bool serverError;
         Thread getNewPlayersThread;
         public SalaEspera(Game1 game,int numberRoom,string name,Servidor server,bool host)
         {
@@ -80,6 +80,7 @@ namespace Cliente
             }
             catch (IOException ex)
             {
+                serverError = true;
             }
         }
         public void Draw(GameTime gameTime)
@@ -111,6 +112,7 @@ namespace Cliente
             ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             room = "Numero de sala:";
+            serverError = false;
         }
 
         public void LoadContent()
@@ -127,6 +129,12 @@ namespace Cliente
                 getNewPlayersThread.Join();
                 return new Partida(game,server,name,players.Count);
             }
+            if (serverError)
+            {
+                getNewPlayersThread.Join();
+                return new PantallaInicio(game,"Se ha perdido la conexion con el servidor");
+            }
+            
             return this;
         }
 

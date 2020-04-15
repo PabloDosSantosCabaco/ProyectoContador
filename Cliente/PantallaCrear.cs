@@ -120,8 +120,15 @@ namespace Cliente
             {
                 //Pedir numero sala al servidor
                 game.efectos[Game1.eSonidos.click].Play();
-                Servidor servidor = new Servidor();
-                return new SalaEspera(game, servidor.getSala(btnInput.Text), btnInput.Text, servidor, true);
+                try
+                {
+                    Servidor servidor = new Servidor();
+                    return new SalaEspera(game, servidor.getSala(btnInput.Text), btnInput.Text, servidor, true);
+                }
+                catch (SocketException ex) {
+                    error = true;
+                    errorMsg = "No se ha podido conectar con el servidor";
+                }
             }
             return this;
         }

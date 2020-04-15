@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -127,25 +128,37 @@ namespace Cliente
             if (txtInputName.Text.Length >= 3 && txtInputRoom.Text.Length > 0)
             {
                 //Mandar al servidor y comprobar que existe dicha sala pero dentro de ella no dicho nombre
-                Servidor servidor = new Servidor();
-                servidor.enviarDatos("join");
-                servidor.enviarDatos(txtInputRoom.Text);
-                servidor.enviarDatos(txtInputName.Text);
-                switch (servidor.recibirDatos())
+                try
                 {
-                    case "true":
-                        game.efectos[Game1.eSonidos.click].Play();
-                        return new SalaEspera(game, Convert.ToInt32(txtInputRoom.Text), txtInputName.Text, servidor, false);
-                    case "errorNombre":
-                        errorSala = false;
-                        errorNombre = true;
-                        break;
-                    case "errorSala":
-                        errorNombre = false;
-                        errorSala = true;
-                        break;
+                    Servidor servidor = new Servidor();
+                    servidor.enviarDatos("join");
+                    servidor.enviarDatos(txtInputRoom.Text);
+                    servidor.enviarDatos(txtInputName.Text);
+                    switch (servidor.recibirDatos())
+                    {
+                        case "true":
+                            game.efectos[Game1.eSonidos.click].Play();
+                            return new SalaEspera(game, Convert.ToInt32(txtInputRoom.Text), txtInputName.Text, servidor, false);
+                        case "errorNombre":
+                            errorSala = false;
+                            errorNombre = true;
+                            break;
+                        case "errorSala":
+                            errorNombre = false;
+                            errorSala = true;
+                            break;
+                    }
+                    servidor.closeServer();
+                }catch(SocketException ex)
+                {
+                    errorSala = true;
+                    errorRoomMsg = "No se ha podido conectar con el servidor";
+                    errorNombre = false;
+                }catch (InvalidOperationException ioex){
+                    errorSala = true;
+                    errorRoomMsg = "No se ha podido conectar con el servidor";
+                    errorNombre = false;
                 }
-                servidor.closeServer();
             }
             if (txtInputName.Text.Length < 3)
             {
