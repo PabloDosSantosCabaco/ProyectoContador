@@ -12,9 +12,7 @@ namespace ServidorContador
             Sentido,
             Efecto
         }
-        private eTipo tipo;
         private int valor;
-        private bool sentido;
         public eTipo Tipo { get; set; }
         public int Valor
         {

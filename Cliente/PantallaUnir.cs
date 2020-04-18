@@ -22,9 +22,9 @@ namespace Cliente
         Boton btnStart;
         bool errorSala;
         bool errorNombre;
+        bool clickJoin;
         string errorRoomMsg;
         string errorNameMsg;
-        bool mouseClick;
         List<TextBox> inputs = new List<TextBox>();
         Dictionary<Keys, bool> keys = new Dictionary<Keys, bool>();
 
@@ -73,9 +73,9 @@ namespace Cliente
         {
             ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
-            mouseClick = false;
             errorSala = false;
             errorNombre = false;
+            clickJoin = false;
             errorRoomMsg = "Invalid room.";
             errorNameMsg = "This name is too short or is already in use.";
         }
@@ -149,12 +149,12 @@ namespace Cliente
                             break;
                     }
                     servidor.closeServer();
-                }catch(SocketException ex)
+                }catch(SocketException)
                 {
                     errorSala = true;
                     errorRoomMsg = "No se ha podido conectar con el servidor";
                     errorNombre = false;
-                }catch (InvalidOperationException ioex){
+                }catch (InvalidOperationException){
                     errorSala = true;
                     errorRoomMsg = "No se ha podido conectar con el servidor";
                     errorNombre = false;
@@ -168,24 +168,26 @@ namespace Cliente
             {
                 errorSala = true;
             }
+            clickJoin = false;
             return this;
         }
         public Pantalla Click()
         {
-            if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (btnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 game.efectos[Game1.eSonidos.click].Play();
                 return new PantallaInicio(game);
             }
-            if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (btnStart.isHover(Mouse.GetState().X, Mouse.GetState().Y) && !clickJoin)
             {
+                clickJoin = true;
                 return goNext();
             }
-            if (txtInputName.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (txtInputName.isHover(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 changeFocus(txtInputName);
             }
-            if (txtInputRoom.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (txtInputRoom.isHover(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 changeFocus(txtInputRoom);
             }

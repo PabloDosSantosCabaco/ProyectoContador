@@ -17,6 +17,7 @@ namespace Cliente
         Game1 game;
         Servidor server;
 
+        bool clickStart;
         Texture2D imgStart;
         Boton btnStart;
         bool host;
@@ -75,10 +76,13 @@ namespace Cliente
                             game.efectos[Game1.eSonidos.newPlayer].Play();
                         }
                         players = auxPlayers;
+                    }else if(frase == "error")
+                    {
+                        clickStart = false;
                     }
                 }
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 serverError = true;
             }
@@ -113,6 +117,7 @@ namespace Cliente
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             room = "Numero de sala:";
             serverError = false;
+            clickStart = false;
         }
 
         public void LoadContent()
@@ -140,8 +145,9 @@ namespace Cliente
 
         public Pantalla Click()
         {
-            if (host && btnStart.click(Mouse.GetState().X, Mouse.GetState().Y) && players.Count >= 2)
+            if (!clickStart && host && btnStart.isHover(Mouse.GetState().X, Mouse.GetState().Y) && players.Count >= 2)
             {
+                clickStart = true;
                 game.efectos[Game1.eSonidos.click].Play();
                 server.enviarDatos("empezar");
             }

@@ -23,6 +23,7 @@ namespace Cliente
         string errorMsg;
         SpriteFont font;
         SpriteFont errorFont;
+        bool clickCreate;
         public int ScreenWidth { get; set; }
         public int ScreenHeight { get; set; }
         Dictionary<Keys, bool> keys = new Dictionary<Keys, bool>();
@@ -62,6 +63,7 @@ namespace Cliente
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             intro = "Introduce tu nombre:";
             error = false;
+            clickCreate = false;
             errorMsg = "Introduce un nombre de al menos 3 caracteres";
         }
 
@@ -99,13 +101,14 @@ namespace Cliente
 
         public Pantalla Click()
         {
-            if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (btnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 game.efectos[Game1.eSonidos.click].Play();
                 return new PantallaInicio(game);
             }
-            if (btnStart.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (btnStart.isHover(Mouse.GetState().X, Mouse.GetState().Y) && !clickCreate)
             {
+                clickCreate = true;
                 return goNext();
             }
             return this;
@@ -125,11 +128,12 @@ namespace Cliente
                     Servidor servidor = new Servidor();
                     return new SalaEspera(game, servidor.getSala(btnInput.Text), btnInput.Text, servidor, true);
                 }
-                catch (SocketException ex) {
+                catch (SocketException) {
                     error = true;
                     errorMsg = "No se ha podido conectar con el servidor";
                 }
             }
+            clickCreate = false;
             return this;
         }
         public Pantalla KeyboardAction(Keys key)

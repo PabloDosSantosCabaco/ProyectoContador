@@ -34,6 +34,7 @@ namespace Cliente
         Boton btnNextCard;
         Boton btnPreviousCard;
         int selectedCard;
+        bool serverWaiting;
         //Definen el ancho y alto de la ventana
         public float ScreenWidth { get; set; }
         public float ScreenHeight { get; set; }
@@ -48,8 +49,6 @@ namespace Cliente
         int maxCards = 8;
         PaqueteTurno data;
 
-        //Determina si el jugador ha acabado
-        bool finish;
         //Texture2D que nos permite tener siempre acceso a una carta
         Texture2D exampleCard;
         //Vectores que definen la posicion y reescalado de las cartas del jugador
@@ -89,13 +88,13 @@ namespace Cliente
             selectedCard = -1;
             //actualizarDatos();
             //Al empezar el jugador está jugando
-            finish = false;
             rank = 0;
             //Permitimos ver el cursor en la centana
             //Window.AllowUserResizing = true;
             ScreenHeight = game.graphics.GraphicsDevice.Viewport.Height;
             ScreenWidth = game.graphics.GraphicsDevice.Viewport.Width;
             column = ScreenWidth / maxCards;
+            serverWaiting = true;
         }
 
         public void LoadContent()
@@ -190,8 +189,9 @@ namespace Cliente
                     }
                     data = new PaqueteTurno(auxLista, auxValor, auxSentido, auxTurno, auxDic);
                     actualizarBaraja();
+                    serverWaiting = true;
                 }
-            }catch(IOException ex)
+            }catch(IOException)
             {
                 serverDown = true;
             }
@@ -314,57 +314,66 @@ namespace Cliente
                 posicionMarcador.Y += font.MeasureString(jugador.Key + ": " + jugador.Value).Y;
             }
         }
-
+        public void sendCard()
+        {
+            serverWaiting = false;
+            switch (data.Cartas[selectedCard].Tipo)
+            {
+                case Carta.eTipo.Numero:
+                    if (data.Sentido && data.ValorMesa + data.Cartas[selectedCard].Valor >= 10 ||
+                    !data.Sentido && data.ValorMesa - data.Cartas[selectedCard].Valor <= -10)
+                    {
+                        game.efectos[Game1.eSonidos.overCount].Play();
+                    }
+                    else
+                    {
+                        game.efectos[Game1.eSonidos.play].Play();
+                    }
+                    break;
+                case Carta.eTipo.Sentido:
+                    game.efectos[Game1.eSonidos.changeWay].Play();
+                    break;
+                case Carta.eTipo.Efecto:
+                    game.efectos[Game1.eSonidos.forCards].Play();
+                    break;
+            }
+            server.enviarDatos("jugar");
+            server.enviarDatos(data.Cartas[selectedCard].Tipo.ToString());
+            server.enviarDatos(data.Cartas[selectedCard].Valor.ToString());
+            server.enviarDatos(data.Cartas[selectedCard].Sentido.ToString());
+            selectedCard = -1;
+        }
+        public void skipTurn()
+        {
+            serverWaiting = false;
+            game.efectos[Game1.eSonidos.overCount].Play();
+            server.enviarDatos("pasar");
+            selectedCard = -1;
+        }
         public Pantalla Click()
         {
             if (data.Turno == name)
             {
-                if (btnPass.click(Mouse.GetState().X, Mouse.GetState().Y))
+                if (btnPass.isHover(Mouse.GetState().X, Mouse.GetState().Y) && serverWaiting)
                 {
-                    game.efectos[Game1.eSonidos.overCount].Play();
-                    server.enviarDatos("pasar");
-                    selectedCard = -1;
+                    skipTurn();
                 }
-                if (btnPlay.click(Mouse.GetState().X, Mouse.GetState().Y) && selectedCard != -1)
+                if (btnPlay.isHover(Mouse.GetState().X, Mouse.GetState().Y) && selectedCard != -1 && serverWaiting)
                 {
-                    switch (data.Cartas[selectedCard].Tipo)
-                    {
-                        case Carta.eTipo.Numero:
-                            if (data.Sentido && data.ValorMesa + data.Cartas[selectedCard].Valor >= 10 ||
-                            !data.Sentido && data.ValorMesa - data.Cartas[selectedCard].Valor <= -10)
-                            {
-                                game.efectos[Game1.eSonidos.overCount].Play();
-                            }
-                            else
-                            {
-                                game.efectos[Game1.eSonidos.play].Play();
-                            }
-                            break;
-                        case Carta.eTipo.Sentido:
-                            game.efectos[Game1.eSonidos.changeWay].Play();
-                            break;
-                        case Carta.eTipo.Efecto:
-                            game.efectos[Game1.eSonidos.forCards].Play();
-                            break;
-                    }
-                    server.enviarDatos("jugar");
-                    server.enviarDatos(data.Cartas[selectedCard].Tipo.ToString());
-                    server.enviarDatos(data.Cartas[selectedCard].Valor.ToString());
-                    server.enviarDatos(data.Cartas[selectedCard].Sentido.ToString());
-                    selectedCard = -1;
+                    sendCard();
                 }
             }
-            if (btnNextCard.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (btnNextCard.isHover(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 moveCards(true);
             }
-            if (btnPreviousCard.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (btnPreviousCard.isHover(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 moveCards(false);
             }
             foreach (Boton btn in cartasBtn)
             {
-                if (btn.click(Mouse.GetState().X, Mouse.GetState().Y))
+                if (btn.isHover(Mouse.GetState().X, Mouse.GetState().Y))
                 {
                     game.efectos[Game1.eSonidos.click].Play();
                     selectedCard = cartasBtn.IndexOf(btn);
@@ -377,9 +386,79 @@ namespace Cliente
 
         public Pantalla KeyboardAction(Keys key)
         {
+            switch (key)
+            {
+                case Keys.Tab:
+                case Keys.Right:
+                    if (selectedCard != -1)
+                    {
+                        moveFocus(true);
+                    }
+                    else
+                    {
+                        changeFocus(0);
+                    }
+                    break;
+                case Keys.Left:
+                    if (selectedCard != -1)
+                    {
+                        moveFocus(false);
+                    }
+                    else
+                    {
+                        changeFocus(0);
+                    }
+                    break;
+                case Keys.Enter:
+                    if(data.Turno == name && selectedCard != -1 && serverWaiting)
+                    {
+                        sendCard();
+                    }
+                    break;
+                case Keys.Space:
+                    if (data.Turno == name && serverWaiting)
+                    {
+                        skipTurn();
+                    }
+                    break;
+                default:
+                    break;
+            }
             return this;
         }
-
+        public void moveFocus(bool right)
+        {
+            foreach(Boton card in cartasBtn)
+            {
+                if (card == cartasBtn[selectedCard])
+                {
+                    if (right)
+                    {
+                        selectedCard = selectedCard + 1 >= cartasBtn.Count ? 0 : selectedCard + 1;
+                    }
+                    else
+                    {
+                        selectedCard = selectedCard - 1 < 0 ? cartasBtn.Count - 1 : selectedCard - 1;
+                    }
+                    while (cartasBtn[selectedCard].X < 0)
+                    {
+                        moveCards(false);
+                    }
+                    while (cartasBtn[selectedCard].X > ScreenWidth)
+                    {
+                        moveCards(true);
+                    }
+                    break;
+                }
+            }
+            changeFocus(selectedCard);
+        }
+        public void changeFocus(int card)
+        {
+            selectedCard = card;
+            btnSelectedCard.X = cartasBtn[selectedCard].X - column / 10;
+            btnSelectedCard.Y = (cartasBtn[selectedCard].Y + cartasBtn[selectedCard].Height / 2) - btnSelectedCard.Height / 2;
+        }
         public void onExiting(object sender, EventArgs args)
         {
             server.closeServer();

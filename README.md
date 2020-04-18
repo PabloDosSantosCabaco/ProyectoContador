@@ -177,3 +177,14 @@
 ## 15/04/2020
 #### Avances
 * Controlada la caída del servidor en cualquier parte de la aplicación. El juego es completamente funcional, de ahora en adelante seguiré con la optimización del código, aumento de funcionalidad y/o nuevas reglas.
+***
+## 17/04/2020
+#### Modificaciones
+* Mediante booleanas, se controla que no se realice más de un click a los botones que se comunican con el servidor para evitar posibles problemas.
+***
+## 18/04/2020
+#### Modificaciones
+* Creación de la clase **GestionClientes**, **Juego** y **SalaEspera** en el Servidor para manejar con mayor facilidad las distintas etapas del código.
+* La clase **Boton** del Cliente cuenta con un segundo constructor para poder introducir texto en su interior.
+#### Avances
+* Es posible navegar a lo largo de toda la aplicación mediante el uso único y exclusivo de teclado.

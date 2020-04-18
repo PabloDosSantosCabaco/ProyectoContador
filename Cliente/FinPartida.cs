@@ -15,14 +15,12 @@ namespace Cliente
         Game1 game;
         Boton btnBack;
         SpriteFont font;
-        bool mouseClick;
         public float ScreenWidth { get; set; }
         public float ScreenHeight { get; set; }
         public FinPartida(Game1 game,int rank)
         {
             this.game = game;
             this.rank = rank;
-            mouseClick = false;
         }
         public void Draw(GameTime gameTime)
         {
@@ -51,7 +49,7 @@ namespace Cliente
 
         public Pantalla Click()
         {
-            if (btnBack.click(Mouse.GetState().X, Mouse.GetState().Y))
+            if (btnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 game.efectos[Game1.eSonidos.click].Play();
                 return new PantallaInicio(game);
