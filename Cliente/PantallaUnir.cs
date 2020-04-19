@@ -86,7 +86,7 @@ namespace Cliente
             btnBack = new Boton(0, 0, game.Content.Load<Texture2D>("Sprites/btnBack"), ScreenWidth / 12);
             input = game.Content.Load<Texture2D>("Sprites/textBox");
             inputSelected = game.Content.Load<Texture2D>("Sprites/textBoxSelected");
-            font = game.Content.Load<SpriteFont>("Fuentes/Intro");
+            font = game.Content.Load<SpriteFont>("Fuentes/File");
             inputFont = game.Content.Load<SpriteFont>("Fuentes/FuenteValor");
             txtInputRoom = new TextBox(ScreenWidth / 2 - ScreenWidth * 3 / 8, ScreenHeight * 7 / 20 - input.Height, inputSelected, input, ScreenWidth * 3 / 4, inputFont, true);
             focused = txtInputRoom;

@@ -69,15 +69,19 @@ namespace Cliente
 
         public void LoadContent()
         {
-            imgBack = game.Content.Load<Texture2D>("Sprites/btnBack");
-            btnBack = new Boton(0,0, imgBack, ScreenWidth / 12);
-            input = game.Content.Load<Texture2D>("Sprites/textBoxSelected");
-            Texture2D inputSelected = game.Content.Load<Texture2D>("Sprites/textBoxSelected");
+            btnBack = new Boton(0,0, game.Content.Load<Texture2D>("Sprites/btnBack"), ScreenWidth / 12);
             font = game.Content.Load<SpriteFont>("Fuentes/FuenteValor");
-            btnInput = new TextBox(ScreenWidth / 2 - ScreenWidth * 3 / 8, ScreenHeight / 2, inputSelected,input, ScreenWidth * 3 / 4,font,true);
-            imgStart = game.Content.Load<Texture2D>("Sprites/btnCrear");
+            btnInput = new TextBox(
+                ScreenWidth / 2 - ScreenWidth * 3 / 8, 
+                ScreenHeight / 2, 
+                game.Content.Load<Texture2D>("Sprites/textBoxSelected"), 
+                game.Content.Load<Texture2D>("Sprites/textBoxSelected"), 
+                ScreenWidth * 3 / 4,
+                font,
+                true
+            );
             errorFont = game.Content.Load<SpriteFont>("Fuentes/Error");
-            btnStart = new Boton(ScreenWidth / 2 - ScreenWidth / 3 / 2, ScreenHeight * 3 / 4, imgStart, ScreenWidth / 3);
+            btnStart = new Boton(ScreenWidth / 2 - ScreenWidth / 3 / 2, ScreenHeight * 3 / 4, game.Content.Load<Texture2D>("Sprites/btnCrear"), ScreenWidth / 3);
 
         }
         

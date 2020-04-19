@@ -21,8 +21,6 @@ namespace Cliente
         SpriteFont errorFont;
         Texture2D btnSelected;
         Texture2D btnDefault;
-        Texture2D btnSelectedHover;
-        Texture2D btnDefaultHover;
         List<Boton> btns = new List<Boton>();
         Boton btnFocused;
 

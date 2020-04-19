@@ -20,6 +20,7 @@ namespace Cliente
         bool clickStart;
         Texture2D imgStart;
         Boton btnStart;
+        Boton btnBack;
         bool host;
         bool waitingRoomActive;
         string name;
@@ -90,6 +91,7 @@ namespace Cliente
         public void Draw(GameTime gameTime)
         {
             game.spriteBatch.Begin();
+            btnBack.draw(game);
             game.spriteBatch.DrawString(font, room+" "+numberRoom, new Vector2(ScreenWidth / 2 - font.MeasureString(room + " " + numberRoom).X/2, ScreenHeight / 8), Color.Black);
             int fila = 1;
             for (int i=0; i<players.Count; i++)
@@ -122,9 +124,9 @@ namespace Cliente
 
         public void LoadContent()
         {
-            font = game.Content.Load<SpriteFont>("Fuentes/Intro");
-            imgStart = game.Content.Load<Texture2D>("Sprites/btnEmpezar");
-            btnStart = new Boton(ScreenWidth / 2 - ScreenWidth / 4 / 2, ScreenHeight * 4 / 5, imgStart, ScreenWidth / 4);
+            font = game.Content.Load<SpriteFont>("Fuentes/File");
+            btnStart = new Boton(ScreenWidth / 2 - ScreenWidth / 4 / 2, ScreenHeight * 4 / 5, game.Content.Load<Texture2D>("Sprites/btnEmpezar"), ScreenWidth / 4);
+            btnBack = new Boton(0, 0, game.Content.Load<Texture2D>("Sprites/btnBack"), ScreenWidth / 12);
         }
 
         public Pantalla Update(GameTime gameTime)
@@ -145,6 +147,13 @@ namespace Cliente
 
         public Pantalla Click()
         {
+            if (btnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                game.efectos[Game1.eSonidos.click].Play();
+                server.closeServer();
+                getNewPlayersThread.Join();
+                return new PantallaInicio(game);
+            }
             if (!clickStart && host && btnStart.isHover(Mouse.GetState().X, Mouse.GetState().Y) && players.Count >= 2)
             {
                 clickStart = true;

@@ -296,8 +296,9 @@ namespace Cliente
                 );
             game.spriteBatch.DrawString(
                 fontValue,
-                data.Sentido ? "+" : "-",
-                new Vector2(ScreenWidth / 2, ScreenHeight / 4) - fontValue.MeasureString(data.ValorMesa.ToString()) / 2 - fontValue.MeasureString(data.Sentido.ToString()),
+                data.Sentido ? "Sumando +" : "Restando -",
+                new Vector2(ScreenWidth/2- fontValue.MeasureString("Sumando +").X / 2,btnPlay.Y - fontValue.MeasureString("Restando -").Y),
+                //new Vector2(ScreenWidth / 2, ScreenHeight / 4) - fontValue.MeasureString(data.ValorMesa.ToString()) / 2 - fontValue.MeasureString(data.Sentido.ToString()),
                 Color.White);
         }
         public void dibujarTurno()

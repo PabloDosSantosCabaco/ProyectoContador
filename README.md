@@ -188,3 +188,9 @@
 * La clase **Boton** del Cliente cuenta con un segundo constructor para poder introducir texto en su interior.
 #### Avances
 * Es posible navegar a lo largo de toda la aplicación mediante el uso único y exclusivo de teclado.
+***
+## 19/04/2020
+#### Modificaciones
+* Referencia al sentido de la mesa durante la partida modificada.
+* Botón de regresar en **SalaEspera** de Cliente para poder salir de la sala.
+* Reducción de código.

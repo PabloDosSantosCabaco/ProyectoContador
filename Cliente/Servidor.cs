@@ -17,7 +17,7 @@ namespace Cliente
 
         public Servidor()
         {
-            client = new TcpClient("127.0.0.1", 20000);
+            client = new TcpClient("javi.ink", 20000);
             ns = client.GetStream();
             sr = new StreamReader(ns);
             sw = new StreamWriter(ns);
