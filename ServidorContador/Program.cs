@@ -13,7 +13,7 @@ namespace ServerContador
     {
         TcpListener s = new TcpListener(IPAddress.Any, 20000);
         bool ServeOpened { get; set; }
-        private int RoomCounter { get; set; }
+        private int RoomCounter = 0;
         Dictionary<int, Room> rooms = new Dictionary<int, Room>();
 
         static void Main(string[] args)
@@ -25,7 +25,6 @@ namespace ServerContador
         public void openServe()
         {
             ServeOpened = false;
-            RoomCounter = 0;
             try
             {
                 s.Start();
