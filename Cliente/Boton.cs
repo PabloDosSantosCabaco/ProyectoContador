@@ -1,4 +1,4 @@
-﻿namespace Cliente
+﻿namespace Client
 {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -32,11 +32,11 @@
             Font = font;
             Text = texto;
         }
-        public virtual void draw(Game1 game)
+        public virtual void draw(MainGame game)
         {
-            game.spriteBatch.Draw(this.Img, new Vector2(this.X, this.Y), scale: this.Scale);
+            game.SpriteBatch.Draw(this.Img, new Vector2(this.X, this.Y), scale: this.Scale);
             if(Font!=null)
-            game.spriteBatch.DrawString(Font,Text,new Vector2(this.X+Width/2-Font.MeasureString(Text).X/2,this.Y+Height/2-Font.MeasureString(Text).Y/2),Color.Black);
+            game.SpriteBatch.DrawString(Font,Text,new Vector2(this.X+Width/2-Font.MeasureString(Text).X/2,this.Y+Height/2-Font.MeasureString(Text).Y/2),Color.Black);
         }
         public bool isHover(float x, float y)
         {

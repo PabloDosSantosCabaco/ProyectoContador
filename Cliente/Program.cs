@@ -1,22 +1,20 @@
 ﻿using System;
 
-namespace Cliente
+namespace Client
 {
-#if WINDOWS || LINUX
+/// <summary>
+/// The main class.
+/// </summary>
+public static class Program
+{
     /// <summary>
-    /// The main class.
+    /// The main entry point for the application.
     /// </summary>
-    public static class Program
+    [STAThread]
+    static void Main()
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            using (var game = new Game1())
-                game.Run();
-        }
+        using (var game = new MainGame())
+            game.Run();
     }
-#endif
+}
 }

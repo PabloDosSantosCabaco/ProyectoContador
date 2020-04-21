@@ -4,112 +4,112 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
-namespace ServidorContador
+namespace ServerContador
 {
     class GestionClientes
     {
-        public static bool crearSala(Cliente cliente, Dictionary<int, Sala> salas,ref int contadorSalas)
+        public static bool createRoom(Client client, Dictionary<int, Room> rooms,ref int roomsCount)
         {
-            string nombre = cliente.recibirDatos();
-            if (nombre.Trim().Length >= 3)
+            string name = client.getData();
+            if (name.Trim().Length >= 3)
             {
                 //Creo la nueva sala
-                lock (salas)
+                lock (rooms)
                 {
-                    Sala sala = new Sala(contadorSalas, nombre, cliente);
-                    cliente.enviarDatos(contadorSalas.ToString());
+                    Room sala = new Room(roomsCount, name, client);
+                    client.sendData(roomsCount.ToString());
                     //Aumento el identificador para evitar repetir salas
-                    contadorSalas++;
+                    roomsCount++;
                     //Añado la sala a la colección
-                    salas.Add(sala.IdSala, sala);
-                    Thread hiloSala = new Thread(() => SalaEspera.salaEspera(sala,salas));
+                    rooms.Add(sala.IdRoom, sala);
+                    Thread hiloSala = new Thread(() => WaitingRoom.waitingRoom(sala,rooms));
                     hiloSala.Start();
-                    Console.WriteLine($"El usuario {nombre} ha creado la sala {contadorSalas-1}");
+                    Console.WriteLine($"El usuario {name} ha creado la sala {roomsCount-1}");
                 }
                 return true;
             }
             return false;
         }
-        public static bool entrarSala(Cliente cliente, Dictionary<int, Sala> salas)
+        public static bool joinRoom(Client client, Dictionary<int, Room> rooms)
         {
             //Comprueba si la sala a la que quiere entrar existe y si tiene menos de 8 clientes
-            int sala = -1;
-            string nombre = null;
+            int room = -1;
+            string name = null;
             try
             {
-                sala = Convert.ToInt32(cliente.recibirDatos());
-                nombre = cliente.recibirDatos();
+                room = Convert.ToInt32(client.getData());
+                name = client.getData();
             }
             catch (FormatException) { }
             catch(OverflowException) { }
-            lock (salas)
+            lock (rooms)
             {
-                if (salas.ContainsKey(sala) && salas[sala].Clientes.Count < 8 && !salas[sala].WaitingRoomFinished)
+                if (rooms.ContainsKey(room) && rooms[room].Clients.Count < 8 && !rooms[room].WaitingRoomFinished)
                 {
                     //El cliente entra en la sala
-                    lock (salas[sala])
+                    lock (rooms[room])
                     {
-                        if (nombre==null || nombre.Trim().Length<3 || salas[sala].Clientes.ContainsKey(nombre))
+                        if (name==null || name.Trim().Length<3 || rooms[room].Clients.ContainsKey(name))
                         {
                             Console.WriteLine("Este nombre ya existe");
-                            cliente.enviarDatos("errorNombre");
+                            client.sendData("errorNombre");
                             return false;
                         }
-                        salas[sala].addCliente(nombre, cliente);
-                        Console.WriteLine($"El cliente {nombre} ha entrado en la sala {sala}");
+                        rooms[room].addCliente(name, client);
+                        Console.WriteLine($"El cliente {name} ha entrado en la sala {room}");
 
-                        cliente.enviarDatos("true");
-                        foreach (Cliente client in salas[sala].Clientes.Values)
+                        client.sendData("true");
+                        foreach (Client cl in rooms[room].Clients.Values)
                         {
-                            client.refreshWaitingRoom(salas[sala]);
+                            cl.refreshWaitingRoom(rooms[room]);
                         }
                     }
                     return true;
                 }
                 else
                 {
-                    cliente.enviarDatos("errorSala");
+                    client.sendData("errorSala");
                     return false;
                 }
             }
         }
-        public static void gestionCliente(TcpClient socket,Dictionary<int,Sala> salas,ref int contadorSalas)
+        public static void manageClient(TcpClient socket,Dictionary<int,Room> rooms,ref int roomCounter)
         {
-            Console.WriteLine("Ha entrado un cliente");
-            Cliente cliente = new Cliente(socket);
-            bool gestionado;
+            Console.WriteLine("New client appears");
+            Client client = new Client(socket);
+            bool done;
             //Decidimos si crea o se une
             do
             {
-                gestionado = true;
-                string res = cliente.recibirDatos();
+                done = true;
+                string res = client.getData();
                 //Decidimos si crea o se une
                 switch (res)
                 {
                     case "new":
                         //Creamos la sala metiendo al primer cliente como host
-                        if (!crearSala(cliente,salas,ref contadorSalas))
+                        if (!createRoom(client,rooms,ref roomCounter))
                         {
-                            gestionado = false;
+                            done = false;
                         }
                         break;
                     case "join":
                         //Gestionamos que el cliente no haya podido entrar en la sala
-                        if (!entrarSala(cliente,salas))
+                        if (!joinRoom(client,rooms))
                         {
                             //cliente.enviarDatos("La sala a la que intentas entrar o existe o está llena.");
-                            gestionado = false;
+                            done = false;
                         }
                         break;
                     case null:
-                        cliente.enviarDatos("Cliente desconectado");
+                        client.sendData("Cliente desconectado");
                         break;
                     default:
-                        cliente.enviarDatos("Comando no soportado");
-                        gestionado = false;
+                        client.sendData("Comando no soportado");
+                        done = false;
                         break;
                 }
-            } while (!gestionado);
+            } while (!done);
         }
     }
 }

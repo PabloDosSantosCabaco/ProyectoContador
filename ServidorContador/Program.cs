@@ -7,14 +7,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace ServidorContador
+namespace ServerContador
 {
     class Program
     {
         TcpListener s = new TcpListener(IPAddress.Any, 20000);
-        bool serveOpened = false;
-        private int contadorSalas = 0;
-        Dictionary<int, Sala> salas = new Dictionary<int, Sala>();
+        bool ServeOpened { get; set; }
+        private int RoomCounter { get; set; }
+        Dictionary<int, Room> rooms = new Dictionary<int, Room>();
 
         static void Main(string[] args)
         {
@@ -22,13 +22,14 @@ namespace ServidorContador
             p.initServer();
             
         }
-
         public void openServe()
         {
+            ServeOpened = false;
+            RoomCounter = 0;
             try
             {
                 s.Start();
-                serveOpened = true;
+                ServeOpened = true;
             }
             catch (SocketException)
             {
@@ -38,11 +39,11 @@ namespace ServidorContador
         public void initServer()
         {
             openServe();
-            while (serveOpened)
+            while (ServeOpened)
             {
                 //Llega un cliente
                 TcpClient sCliente = s.AcceptTcpClient();
-                Thread hiloGestionCliente = new Thread(() => GestionClientes.gestionCliente(sCliente,salas, ref contadorSalas));
+                Thread hiloGestionCliente = new Thread(() => GestionClientes.manageClient(sCliente,rooms, ref RoomCounter));
                 hiloGestionCliente.Start();
             }
             s.Stop();

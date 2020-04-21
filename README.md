@@ -194,3 +194,8 @@
 * Referencia al sentido de la mesa durante la partida modificada.
 * Botón de regresar en **SalaEspera** de Cliente para poder salir de la sala.
 * Reducción de código.
+***
+## 21/04/2020
+#### Modificaciones
+* Nombres de variables, propiedades, clases, funciones, etc, traducidos al inglés.
+* Modificación de botones con imágenes estáticas a botones con imágenes dinámicas.
