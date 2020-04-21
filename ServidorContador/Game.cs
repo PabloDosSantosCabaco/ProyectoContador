@@ -244,11 +244,8 @@ namespace ServerContador
         public static Card randomCard()
         {
             Random rand = new Random();
-            int num = 0;
-            Card.eType type = Card.eType.Number;
-            int value = 0;
-            bool way = true;
-            num = rand.Next(0, 10);
+            Card.eType type;
+            int num = rand.Next(0, 10);
             //Hay un 70% de probabilidades de que salga Numero
             if (num < 7)
             {
@@ -264,9 +261,11 @@ namespace ServerContador
             {
                 type = Card.eType.Effect;
             }
-            value = rand.Next(3, 8);
-            way = rand.Next(0, 2) == 0 ? true : false;
-            return new Card(type, value, way);
+            return new Card(
+                type, 
+                rand.Next(3, 8), 
+                rand.Next(0, 2) == 0 ? true : false
+            );
         }
     }
 }

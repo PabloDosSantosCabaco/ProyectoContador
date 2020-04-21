@@ -16,13 +16,13 @@ namespace ServerContador
                 //Creo la nueva sala
                 lock (rooms)
                 {
-                    Room sala = new Room(roomsCount, name, client);
+                    Room room = new Room(roomsCount, name, client);
                     client.sendData(roomsCount.ToString());
                     //Aumento el identificador para evitar repetir salas
                     roomsCount++;
                     //Añado la sala a la colección
-                    rooms.Add(sala.IdRoom, sala);
-                    Thread hiloSala = new Thread(() => WaitingRoom.waitingRoom(sala,rooms));
+                    rooms.Add(room.IdRoom, room);
+                    Thread hiloSala = new Thread(() => WaitingRoom.waitingRoom(room,rooms));
                     hiloSala.Start();
                     Console.WriteLine($"El usuario {name} ha creado la sala {roomsCount-1}");
                 }

@@ -13,26 +13,27 @@ namespace ServerContador
             Effect
         }
         public eType Type { get; set; }
+        private int _value;
         public int Value
         {
             set
             {
                 if (value < 3)
                 {
-                    Value = 3;
+                    _value = 3;
                 }
                 else if (value > 7)
                 {
-                    Value = 7;
+                    _value = 7;
                 }
                 else
                 {
-                    Value = value;
+                    _value = value;
                 }
             }
             get
             {
-                return Value;
+                return _value;
             }
         }
         public bool Way { get; set; }

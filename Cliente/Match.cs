@@ -161,8 +161,7 @@ namespace Client
                     {
                         auxList.Add(
                             new Card(
-                                (Card.eType)Enum.Parse(typeof(Card.eType),
-                                Server.getData()),
+                                (Card.eType)Enum.Parse(typeof(Card.eType),Server.getData()),
                                 Convert.ToInt32(Server.getData()),
                                 Convert.ToBoolean(Server.getData())
                                 )
