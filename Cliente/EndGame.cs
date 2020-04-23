@@ -11,9 +11,12 @@ namespace Client
         private MainGame Game { get; set; }
         private Boton BtnBack { get; set; }
         private SpriteFont Font { get; set; }
+        private SpriteFont ErrorFont { get; set; }
         private float ScreenWidth { get; set; }
         private float ScreenHeight { get; set; }
         private string RankMessage { get; set; }
+        private Texture2D BtnSelected { get; set; }
+        private Texture2D BtnDefault { get; set; }
         public EndGame(MainGame game,int rank)
         {
             this.Game = game;
@@ -41,17 +44,30 @@ namespace Client
 
         public void LoadContent()
         {
+            BtnSelected = Game.Content.Load<Texture2D>("Sprites/btnSelected");
+            BtnDefault = Game.Content.Load<Texture2D>("Sprites/btnDefault");
+            ErrorFont = Game.Content.Load<SpriteFont>("Fuentes/Error");
             BtnBack = new Boton(
                 ScreenWidth / 2 - ScreenWidth / 4/2,
                 ScreenHeight * 3 / 5,
-                Game.Content.Load<Texture2D>("Sprites/btnRepeat"),
-                ScreenWidth / 4
+                BtnSelected,
+                ScreenWidth / 4,
+                ErrorFont,
+                "Volver"
             );
+
             Font = Game.Content.Load<SpriteFont>("Fuentes/Fuente");
         }
 
         public Screen Update(GameTime gameTime)
         {
+            if (BtnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
+            {
+                BtnBack.Img = BtnSelected;
+            }else if(BtnBack.Img == BtnSelected)
+            {
+                BtnBack.Img = BtnDefault;
+            }
             return this;
         }
 
