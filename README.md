@@ -199,3 +199,7 @@
 #### Modificaciones
 * Nombres de variables, propiedades, clases, funciones, etc, traducidos al inglés.
 * Modificación de botones con imágenes estáticas a botones con imágenes dinámicas.
+***
+## 23/04/2020
+#### Modificaciones
+* El botón de volver a la pantalla de inicio desde la de final de juego interactúa ahora al pasar sobre él con el ratón.
