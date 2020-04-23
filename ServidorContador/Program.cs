@@ -29,6 +29,7 @@ namespace ServerContador
             {
                 s.Start();
                 ServeOpened = true;
+                Console.WriteLine("------------ SERVER CONTADOR RUNNING ON PORT 20000 ------------");
             }
             catch (SocketException)
             {
