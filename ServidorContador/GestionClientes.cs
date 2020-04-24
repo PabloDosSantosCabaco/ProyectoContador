@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -79,37 +80,44 @@ namespace ServerContador
             Client client = new Client(socket);
             bool done;
             //Decidimos si crea o se une
-            do
+            try
             {
-                done = true;
-                string res = client.getData();
-                //Decidimos si crea o se une
-                switch (res)
+                do
                 {
-                    case "new":
-                        //Creamos la sala metiendo al primer cliente como host
-                        if (!createRoom(client,rooms,ref roomCounter))
-                        {
+                    done = true;
+                    string res = client.getData();
+                    //Decidimos si crea o se une
+                    switch (res)
+                    {
+                        case "new":
+                            //Creamos la sala metiendo al primer cliente como host
+                            if (!createRoom(client, rooms, ref roomCounter))
+                            {
+                                done = false;
+                            }
+                            break;
+                        case "join":
+                            //Gestionamos que el cliente no haya podido entrar en la sala
+                            if (!joinRoom(client, rooms))
+                            {
+                                //cliente.enviarDatos("La sala a la que intentas entrar o existe o está llena.");
+                                done = false;
+                            }
+                            break;
+                        case null:
+                            client.sendData("Cliente desconectado");
+                            break;
+                        default:
+                            client.sendData("Comando no soportado");
                             done = false;
-                        }
-                        break;
-                    case "join":
-                        //Gestionamos que el cliente no haya podido entrar en la sala
-                        if (!joinRoom(client,rooms))
-                        {
-                            //cliente.enviarDatos("La sala a la que intentas entrar o existe o está llena.");
-                            done = false;
-                        }
-                        break;
-                    case null:
-                        client.sendData("Cliente desconectado");
-                        break;
-                    default:
-                        client.sendData("Comando no soportado");
-                        done = false;
-                        break;
-                }
-            } while (!done);
+                            break;
+                    }
+                } while (!done);
+            }catch(IOException ex)
+            {
+                client.disconnect();
+                Console.WriteLine($"Error: {ex}");
+            }
         }
     }
 }

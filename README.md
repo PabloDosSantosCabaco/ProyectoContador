@@ -203,3 +203,7 @@
 ## 23/04/2020
 #### Modificaciones
 * El botón de volver a la pantalla de inicio desde la de final de juego interactúa ahora al pasar sobre él con el ratón.
+***
+## 24/04/2020
+#### Modificaciones
+* Encontrado y corregido error en la funcion `manageClient()` debido al tiempo de espera por la respuesta del socket excedido.
