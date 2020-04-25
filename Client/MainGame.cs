@@ -54,6 +54,7 @@ namespace Client
             effects = new Dictionary<eSounds, SoundEffect>();
             //Valores marcadores
             base.Initialize();
+            this.Window.Title = "Contador";
         }
 
 

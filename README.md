@@ -207,3 +207,8 @@
 ## 24/04/2020
 #### Modificaciones
 * Encontrado y corregido error en la funcion `manageClient()` debido al tiempo de espera por la respuesta del socket excedido.
+***
+## 25/04/2020
+#### Modificaciones
+* Nuevo icono personalizado para la aplicación.
+* Cambio de nombre Cliente a Client y ServidorContador a ServerContador.
