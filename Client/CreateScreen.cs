@@ -8,24 +8,74 @@ namespace Client
 {
     class CreateScreen : Screen
     {
+        /// <summary>
+        /// Referencia la base del juego del que parten todas las pantallas.
+        /// </summary>
         private MainGame Game { get; set; }
+        /// <summary>
+        /// Boton de regreso a la pantalla anterior.
+        /// </summary>
         private Boton BtnBack { get; set; }
+        /// <summary>
+        /// Boton que permite crear la sala prepartida.
+        /// </summary>
         private Boton BtnStart { get; set; }
+        /// <summary>
+        /// Imagen que indica que el Boton está seleccionado.
+        /// </summary>
         private Texture2D BtnSelected { get; set; }
+        /// <summary>
+        /// Imagen de Boton por defecto.
+        /// </summary>
         private Texture2D BtnDefault { get; set; }
+        /// <summary>
+        /// Caja de texto que permite introducir el nombre.
+        /// </summary>
         private TextBox BtnInput { get; set; }
+        /// <summary>
+        /// Mensaje que indica la introducción de texto.
+        /// </summary>
         private string Intro { get; set; }
+        /// <summary>
+        /// Mensaje de error ante posibles datos incorrectos.
+        /// </summary>
         private string ErrorMsg { get; set; }
+        /// <summary>
+        /// Fuente por defecto.
+        /// </summary>
         private SpriteFont Font { get; set; }
+        /// <summary>
+        /// Fuente para mensajes de error.
+        /// </summary>
         private SpriteFont ErrorFont { get; set; }
+        /// <summary>
+        /// Indica si se ha hecho click en el Boton BtnStart.
+        /// </summary>
         private bool ClickCreate { get; set; }
+        /// <summary>
+        /// Indica el ancho de la pantalla.
+        /// </summary>
         private int ScreenWidth { get; set; }
+        /// <summary>
+        /// Indica el alto de la pantalla.
+        /// </summary>
         private int ScreenHeight { get; set; }
+        /// <summary>
+        /// Indica si ha ocurrido un error.
+        /// </summary>
         private bool ErrorOcurrered { get; set; }
+        /// <summary>
+        /// Constructor de CreateScreen.
+        /// </summary>
+        /// <param name="game">Base de la aplicación.</param>
         public CreateScreen(MainGame game)
         {
             Game = game;
         }
+        /// <summary>
+        /// Dibuja todos los elementos de la pantalla.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
         public void Draw(GameTime gameTime)
         {
             Game.SpriteBatch.Begin();
@@ -50,7 +100,9 @@ namespace Client
             }
             Game.SpriteBatch.End();
         }
-
+        /// <summary>
+        /// Inicializa todas las propiedades y variables de la clase.
+        /// </summary>
         public void Initialize()
         {
             ScreenWidth = Game.Graphics.GraphicsDevice.Viewport.Width;
@@ -60,7 +112,9 @@ namespace Client
             ClickCreate = false;
             ErrorMsg = "Type a name with 3 characters or more";
         }
-
+        /// <summary>
+        /// Carga el contenido necesario en memoria.
+        /// </summary>
         public void LoadContent()
         {
             BtnBack = new Boton(0,0, Game.Content.Load<Texture2D>("Sprites/btnBack"), ScreenWidth / 12);
@@ -86,7 +140,11 @@ namespace Client
                 "Create room"
             );
         }
-        
+        /// <summary>
+        /// Se encarga del refresco de pantalla. Se realiza 60 veces por segundo.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
+        /// <returns></returns>
         public Screen Update(GameTime gameTime)
         {
             if (BtnStart.isHover(Mouse.GetState().X, Mouse.GetState().Y))
@@ -99,6 +157,11 @@ namespace Client
             }
             return this;
         }
+        /// <summary>
+        /// Comprueba si el nombre pasado por parámetro es válido teniendo en cuenta su longitud.
+        /// </summary>
+        /// <param name="newName">Nuevo nombre.</param>
+        /// <returns>Devuelve el nombre nuevo si es válido, sino el antiguo.</returns>
         public string checkName(string newName)
         {
             //Digamos que sirve para los números
@@ -112,7 +175,10 @@ namespace Client
             }
             return BtnInput.Text;
         }
-
+        /// <summary>
+        /// Gestiona los clicks del ratón del usuario.
+        /// </summary>
+        /// <returns>Devuelve un objeto tipo Screen según las acciones del usuario.</returns>
         public Screen Click()
         {
             if (BtnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
@@ -127,6 +193,10 @@ namespace Client
             }
             return this;
         }
+        /// <summary>
+        /// Comprueba si es posible avanzar a la siguiente pantalla según el orden lógico de vida del programa.
+        /// </summary>
+        /// <returns>Devuelve la siguiente o la actual en caso de error.</returns>
         public Screen goNext()
         {
             if (BtnInput.Text.Trim().Length < 3)
@@ -150,6 +220,11 @@ namespace Client
             ClickCreate = false;
             return this;
         }
+        /// <summary>
+        /// Gestiona las entradas por teclado del usuario.
+        /// </summary>
+        /// <param name="key">Tecla pulsada por el usuario.</param>
+        /// <returns>Devuelve un objeto tipo Screen en función de las acciones del usuario.</returns>
         public Screen KeyboardAction(Keys key)
         {
             if (key >= Keys.A && key <= Keys.Z ||
@@ -171,8 +246,11 @@ namespace Client
             }
             return this;
         }
-
-        public void onExiting(object sender, EventArgs args)
+        /// <summary>
+        /// Se ejecuta al cerrar la aplicación.
+        /// Se encarga de cerrar posibles sockets abiertos, hilos y demás procesos que no han finalizado ni terminado de forma natural.
+        /// </summary>
+        public void onExiting()
         {
         
         }

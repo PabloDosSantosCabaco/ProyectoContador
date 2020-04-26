@@ -8,6 +8,11 @@ namespace ServerContador
 {
     class WaitingRoom
     {
+        /// <summary>
+        /// Bloquea la sala y comprueba si los clientes están conectados. Si no
+        /// lo están, los eliminar de la sala y cierran sus sockets.
+        /// </summary>
+        /// <param name="room">Sala a comprobar.</param>
         public static void refreshConectedPeople(Room room)
         {
             while (!room.WaitingRoomFinished)
@@ -34,6 +39,12 @@ namespace ServerContador
                 Thread.Sleep(100);
             }
         }
+        /// <summary>
+        /// Función que gestiona la actividad en la sala de espera. Espera la respuesta del host que 
+        /// tan solo puede desconectarse o iniciar la partida.
+        /// </summary>
+        /// <param name="room">Sala a gestionar.</param>
+        /// <param name="rooms">Colección de salas.</param>
         public static void waitingRoom(Room room,Dictionary<int,Room> rooms)
         {
             Client host;
@@ -83,6 +94,13 @@ namespace ServerContador
                 Game.partida(room,rooms);
             }
         }
+        /// <summary>
+        /// Borra el host de la sala y en caso de estar solo, borra la sala. Sino, nombre un nuevo host.
+        /// </summary>
+        /// <param name="room">Sala donde borrar el host.</param>
+        /// <param name="host">Host a borrar.</param>
+        /// <param name="correct">Indica si la partida puede llegar a comenzarse.</param>
+        /// <param name="rooms">Colección de salas.</param>
         public static void deletePlayerOnWaitingRoom(Room room, ref Client host, ref bool correct,Dictionary<int, Room> rooms)
         {
             lock (room)
@@ -111,6 +129,11 @@ namespace ServerContador
                 }
             }
         }
+        /// <summary>
+        /// Cierra la sala pasada como parámetro.
+        /// </summary>
+        /// <param name="room">Sala a cerrar.</param>
+        /// <param name="rooms">Colección de salas.</param>
         public static void closeRoom(Room room,Dictionary<int,Room> rooms)
         {
             lock (rooms)

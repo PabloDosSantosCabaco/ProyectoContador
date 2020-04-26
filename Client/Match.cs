@@ -10,45 +10,111 @@ namespace Client
 {
     class Match : Screen
     {
+        /// <summary>
+        /// Referencia la base del juego del que parten todas las pantallas.
+        /// </summary>
         private MainGame Game { get; set; }
+        /// <summary>
+        /// Objeto Server que permite la conexión y comunicación con el servidor.
+        /// </summary>
         private Server Server { get; set; }
-
+        /// <summary>
+        /// Hilo encargado de comprobar la conexión de los jugadores.
+        /// </summary>
         private Thread ConnectThread;
+        /// <summary>
+        /// Nombre del jugador.
+        /// </summary>
         private string Name { get; set; }
+        /// <summary>
+        /// Indica si se ha finalizado o no la partida.
+        /// </summary>
         private bool Playing { get; set; }
+        /// <summary>
+        /// Indica la posición actual del jugador en el ranking.
+        /// </summary>
         private int Rank { get; set; }
+        /// <summary>
+        /// Indica si se ha perdido la conexión con el servidor.
+        /// </summary>
         private bool ServerDown { get; set; }
-
-        //Imagenes cartas
+        /// <summary>
+        /// Colección de imágenes de todas las cartas existentes.
+        /// </summary>
         private Dictionary<string, Texture2D> ImgCards;
-        //Cartas jugador
+        /// <summary>
+        /// Coleccion de cartas del jugador.
+        /// </summary>
         private List<Boton> BtnCards;
+        /// <summary>
+        /// Hace referencia a la carta seleccionada.
+        /// </summary>
         private Boton BtnSelectedCard { get; set; }
-        //Boton jugar y botón pasar
+        /// <summary>
+        /// Boton que permite jugar carta.
+        /// </summary>
         private Boton BtnPlay { get; set; }
+        /// <summary>
+        /// Boton que permite pasar turno.
+        /// </summary>
         private Boton BtnPass { get; set; }
+        /// <summary>
+        /// Boton que avanza en la baraja hacia la derecha.
+        /// </summary>
         private Boton BtnNextCard { get; set; }
+        /// <summary>
+        /// Boton que avanza en la baraja hacia la izquierda.
+        /// </summary>
         private Boton BtnPreviousCard { get; set; }
+        /// <summary>
+        /// Entero que indica la posición en la baraja de la carta seleccionada.
+        /// </summary>
         private int SelectedCard { get; set; }
+        /// <summary>
+        /// Indica si el servidor está a la espera de información.
+        /// </summary>
         private bool ServerWaiting { get; set; }
-        //Definen el ancho y alto de la ventana
-        private float ScreenWidth { get; set; }
-        private float ScreenHeight { get; set; }
-        //Define el ancho que tendrá cada columna contenedora de una carta
+        /// <summary>
+        /// Indica el ancho de la pantalla.
+        /// </summary>
+        private int ScreenWidth { get; set; }
+        /// <summary>
+        /// Indica el alto de la pantalla.
+        /// </summary>
+        private int ScreenHeight { get; set; }
+        /// <summary>
+        /// Indica el ancho de una columna.
+        /// </summary>
         private float Column { get; set; }
-
-        //Vector que define la posición del valor de mesa
+        /// <summary>
+        /// Fuente por defecto.
+        /// </summary>
         private SpriteFont DefaultFont { get; set; }
+        //Fuente para dibujar el valor y sentido de la mesa.
         private SpriteFont FontValue { get; set; }
-
-        //Maximo numero de cartas que se muestran a la vez
+        /// <summary>
+        /// Número máximo de cartas que se muestran por pantalla al mismo tiempo.
+        /// </summary>
         private int MaxCards { get; set; }
+        /// <summary>
+        /// Útlimo paquete de información recibido del servidor.
+        /// </summary>
         private Data ActualData { get; set; }
-
-        //Texture2D que nos permite tener siempre acceso a una carta
+        /// <summary>
+        /// Carta de ejemplo que nos permite obtener información genérica de las cartas.
+        /// </summary>
         private Texture2D ExampleCard { get; set; }
-        //Vectores que definen la posicion y reescalado de las cartas del jugador
+        /// <summary>
+        /// Vector que indica la posición de todas las cartas.
+        /// </summary>
         private Vector2 CardPosition;
+        /// <summary>
+        /// Constructor de la clase Match.
+        /// </summary>
+        /// <param name="game">Base de la aplicación.</param>
+        /// <param name="server">Objeto Server que establece conexción con el servidor.</param>
+        /// <param name="name">Nombre del jugador.</param>
+        /// <param name="players">Numero de jugadores en la sala.</param>
         public Match(MainGame game,Server server,string name,int players)
         {
             Game = game;
@@ -60,6 +126,10 @@ namespace Client
             ImgCards = new Dictionary<string, Texture2D>();
             ActualData = null;
         }
+        /// <summary>
+        /// Dibuja todos los elementos de la pantalla.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
         public void Draw(GameTime gameTime)
         {
             Game.SpriteBatch.Begin();
@@ -76,7 +146,10 @@ namespace Client
                 drawCards();
             }
             Game.SpriteBatch.End();
-        }   
+        }
+        /// <summary>
+        /// Inicializa todas las propiedades y variables de la clase.
+        /// </summary>
         public void Initialize()
         {
             SelectedCard = -1;
@@ -88,6 +161,9 @@ namespace Client
             Column = ScreenWidth / MaxCards;
             ServerWaiting = true;
         }
+        /// <summary>
+        /// Carga el contenido necesario en memoria.
+        /// </summary>
         public void LoadContent()
         {
             for (int i = 3; i < 8; i++)
@@ -111,6 +187,11 @@ namespace Client
             ConnectThread = new Thread(() => refreshData());
             ConnectThread.Start();
         }
+        /// <summary>
+        /// Se encarga del refresco de pantalla. Se realiza 60 veces por segundo.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
+        /// <returns></returns>
         public Screen Update(GameTime gameTime)
         {
             if (!Playing)
@@ -135,6 +216,10 @@ namespace Client
             centerCards();
             return this;
         }
+        /// <summary>
+        /// Centra las cartas en pantalla impidiendo que, en caso de haber tantas o más cartas
+        /// que el número máximo permitido, no haya huecos vacios a los laterales.
+        /// </summary>
         public void centerCards()
         {
             if (BtnCards.Count <= MaxCards)
@@ -142,6 +227,9 @@ namespace Client
                 CardPosition.X = Column / 10;
             }
         }
+        /// <summary>
+        /// Se mantiene a la espera constantemente de nueva información por parte del servidor.
+        /// </summary>
         public void refreshData()
         {
             try
@@ -185,6 +273,9 @@ namespace Client
                 ServerDown = true;
             }
         }
+        /// <summary>
+        /// Actualiza la baraja del jugador.
+        /// </summary>
         public void refreshDeck()
         {
             BtnCards.Clear();
@@ -224,6 +315,10 @@ namespace Client
             }
             CardPosition.X -= Column * BtnCards.Count;
         }
+        /// <summary>
+        /// Nos permite desplazarnos a través de la baraja.
+        /// </summary>
+        /// <param name="advance">Sentido en el que avanzamos en la baraja.</param>
         public void moveCards(bool advance)
         {
             if (advance)
@@ -251,6 +346,9 @@ namespace Client
                 }
             }
         }
+        /// <summary>
+        /// Dibuja los botones interactivos de la pantalla.
+        /// </summary>
         public void drawButtons()
         {
             Game.SpriteBatch.Draw(BtnPlay.Img, position: new Vector2(BtnPlay.X, BtnPlay.Y), scale: BtnPlay.Scale);
@@ -264,6 +362,9 @@ namespace Client
                 Game.SpriteBatch.Draw(BtnNextCard.Img, position: new Vector2(BtnNextCard.X, BtnNextCard.Y), scale: BtnNextCard.Scale);
             }
         }
+        /// <summary>
+        /// Dibuja la baraja de cartas.
+        /// </summary>
         public void drawCards()
         {
             //Dibujado de las cartas
@@ -273,6 +374,9 @@ namespace Client
                 Game.SpriteBatch.Draw(btn.Img, position: new Vector2(btn.X, btn.Y), scale: btn.Scale);
             }
         }
+        /// <summary>
+        /// Dibuja el contador y el sentido de la mesa.
+        /// </summary>
         public void drawTable()
         {
             //Dibujamos el valor y sentido de mesa
@@ -289,11 +393,17 @@ namespace Client
                 new Vector2(ScreenWidth/2- FontValue.MeasureString(wayName).X / 2,BtnPlay.Y - FontValue.MeasureString(wayName).Y),
                 Color.White);
         }
+        /// <summary>
+        /// Dibuja el turno de la mesa.
+        /// </summary>
         public void drawTurn()
         {
             Vector2 turnPosition = new Vector2(ScreenWidth - DefaultFont.MeasureString("Turn: " + ActualData.Turn).X, 0);
             Game.SpriteBatch.DrawString(DefaultFont, "Turn: " + ActualData.Turn, turnPosition, Color.White);
         }
+        /// <summary>
+        /// Dibuja la lista de jugadores de la partida.
+        /// </summary>
         public void drawPlayers()
         {
             Vector2 playersPosition = new Vector2(Column / 10, Column / 10);
@@ -303,6 +413,9 @@ namespace Client
                 playersPosition.Y += DefaultFont.MeasureString(jugador.Key + ": " + jugador.Value).Y;
             }
         }
+        /// <summary>
+        /// Envia una carta al servidor y realiza el sonido acorde al resultado obtenido.
+        /// </summary>
         public void sendCard()
         {
             ServerWaiting = false;
@@ -332,6 +445,9 @@ namespace Client
             Server.sendData(ActualData.Cards[SelectedCard].Way.ToString());
             SelectedCard = -1;
         }
+        /// <summary>
+        /// Pasa turno y reproduce el sonido correspondiente a dicha acción.
+        /// </summary>
         public void skipTurn()
         {
             ServerWaiting = false;
@@ -339,6 +455,10 @@ namespace Client
             Server.sendData("pasar");
             SelectedCard = -1;
         }
+        /// <summary>
+        /// Gestiona los clicks del ratón del usuario.
+        /// </summary>
+        /// <returns>Devuelve un objeto tipo Screen según las acciones del usuario.</returns>
         public Screen Click()
         {
             if (ActualData.Turn == Name)
@@ -372,6 +492,11 @@ namespace Client
             }
             return this;
         }
+        /// <summary>
+        /// Gestiona las entradas por teclado del usuario.
+        /// </summary>
+        /// <param name="key">Tecla pulsada por el usuario.</param>
+        /// <returns>Devuelve un objeto tipo Screen en función de las acciones del usuario.</returns>
         public Screen KeyboardAction(Keys key)
         {
             switch (key)
@@ -414,6 +539,10 @@ namespace Client
             }
             return this;
         }
+        /// <summary>
+        /// Cambia el focus de la carta a la siguiente o anterior, según especifíque el parámetro.
+        /// </summary>
+        /// <param name="right">True avanza , false retrocede.</param>
         public void moveFocus(bool right)
         {
             foreach(Boton card in BtnCards)
@@ -441,13 +570,21 @@ namespace Client
             }
             changeFocus(SelectedCard);
         }
+        /// <summary>
+        /// Cambia el focus de carta a la pasada como parámetro.
+        /// </summary>
+        /// <param name="card"></param>
         public void changeFocus(int card)
         {
             SelectedCard = card;
             BtnSelectedCard.X = BtnCards[SelectedCard].X - Column / 10;
             BtnSelectedCard.Y = (BtnCards[SelectedCard].Y + BtnCards[SelectedCard].Height / 2) - BtnSelectedCard.Height / 2;
         }
-        public void onExiting(object sender, EventArgs args)
+        /// <summary>
+        /// Se ejecuta al cerrar la aplicación.
+        /// Se encarga de cerrar posibles sockets abiertos, hilos y demás procesos que no han finalizado ni terminado de forma natural.
+        /// </summary>
+        public void onExiting()
         {
             Server.closeServer();
             ConnectThread.Join();

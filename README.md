@@ -212,3 +212,7 @@
 #### Modificaciones
 * Nuevo icono personalizado para la aplicación.
 * Cambio de nombre Cliente a Client y ServidorContador a ServerContador.
+***
+## 26/04/2020
+#### Avances
+* Documentación implementada.

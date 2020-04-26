@@ -11,26 +11,91 @@ namespace Client
 {
     class WaitingRoomScreen : Screen
     {
+        /// <summary>
+        /// Base de la aplicación.
+        /// </summary>
         private MainGame Game { get; set; }
+        /// <summary>
+        /// Objeto Server que permite la conexión y comunicación con el servidor.
+        /// </summary>
         private Server Server { get; set; }
-
+        /// <summary>
+        /// Indica si se ha pulsado el Boton que hay en pantalla.
+        /// </summary>
         private bool ClickStart { get; set; }
+        /// <summary>
+        /// Boton que permite empezar la partida.
+        /// </summary>
         private Boton BtnStart { get; set; }
+        /// <summary>
+        /// Boton que permite volver a la pantalla inicial abandonando ña sala.
+        /// </summary>
         private Boton BtnBack { get; set; }
+
+        /// <summary>
+        /// Imagen que indica que el Boton está seleccionado.
+        /// </summary>
         private Texture2D BtnSelected { get; set; }
+        /// <summary>
+        /// Imagen de Boton por defecto.
+        /// </summary>
         private Texture2D BtnDefault { get; set; }
+        /// <summary>
+        /// Indica si el jugador es el host de la sala.
+        /// </summary>
         private bool Host { get; set; }
+        /// <summary>
+        /// Indica si la sala de espera sigue como pantalla actual.
+        /// </summary>
         private bool WaitingRoomActive { get; set; }
+        /// <summary>
+        /// Indica el nombre el jugador.
+        /// </summary>
         private string Name { get; set; }
+        /// <summary>
+        /// Frase para indicar el número de la sala.
+        /// </summary>
         private string Room { get; set; }
+        /// <summary>
+        /// Colección de nombres de los jugadores que entran a la sala.
+        /// </summary>
         private List<string> Players = new List<string>();
+        /// <summary>
+        /// Fuente por defecto.
+        /// </summary>
         private SpriteFont Font { get; set; }
+        /// <summary>
+        /// Fuente secundaria.
+        /// </summary>
         private SpriteFont ErrorFont { get; set; }
+        /// <summary>
+        /// Indica el ancho de la pantalla.
+        /// </summary>
         private int ScreenWidth { get; set; }
+        /// <summary>
+        /// Indica el alto de la pantalla.
+        /// </summary>
         private int ScreenHeight { get; set; }
+        /// <summary>
+        /// Indica el número de la sala.
+        /// </summary>
         private int NumberRoom { get; set; }
+        /// <summary>
+        /// Indica si ha sucedido un error con la conexión.
+        /// </summary>
         private bool ServerError { get; set; }
+        /// <summary>
+        /// Hilo encargado de captar jugadores que quieran entrar en la sala.
+        /// </summary>
         private Thread getNewPlayersThread;
+        /// <summary>
+        /// Constructor de la clase WaitingRoom.
+        /// </summary>
+        /// <param name="game">Base de la aplicación.</param>
+        /// <param name="numberRoom">Numero de la sala.</param>
+        /// <param name="name">Nombre del jugador.</param>
+        /// <param name="server">Objeto Server que conecta con el servidor.</param>
+        /// <param name="host">Indica si es o no el host de la sala.</param>
         public WaitingRoomScreen(MainGame game,int numberRoom,string name,Server server,bool host)
         {
             Game = game;
@@ -43,6 +108,9 @@ namespace Client
             getNewPlayersThread = new Thread(() => getNewPlayers());
             getNewPlayersThread.Start();
         }
+        /// <summary>
+        /// Recibe nuevos jugadores a la sala y actualiza la información.
+        /// </summary>
         public void getNewPlayers()
         {
             try
@@ -87,6 +155,10 @@ namespace Client
                 ServerError = true;
             }
         }
+        /// <summary>
+        /// Dibuja todos los elementos de la pantalla.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
         public void Draw(GameTime gameTime)
         {
             Game.SpriteBatch.Begin();
@@ -111,7 +183,9 @@ namespace Client
             }
             Game.SpriteBatch.End();
         }
-
+        /// <summary>
+        /// Inicializa todas las propiedades y variables de la clase.
+        /// </summary>
         public void Initialize()
         {
             ScreenWidth = Game.Graphics.GraphicsDevice.Viewport.Width;
@@ -120,7 +194,9 @@ namespace Client
             ServerError = false;
             ClickStart = false;
         }
-
+        /// <summary>
+        /// Carga el contenido necesario en memoria.
+        /// </summary>
         public void LoadContent()
         {
             BtnSelected = Game.Content.Load<Texture2D>("Sprites/btnSelected");
@@ -142,7 +218,11 @@ namespace Client
                 ScreenWidth / 12
             );
         }
-
+        /// <summary>
+        /// Se encarga del refresco de pantalla. Se realiza 60 veces por segundo.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
+        /// <returns></returns>
         public Screen Update(GameTime gameTime)
         {
             if (BtnStart.isHover(Mouse.GetState().X, Mouse.GetState().Y))
@@ -166,7 +246,10 @@ namespace Client
             
             return this;
         }
-
+        /// <summary>
+        /// Gestiona los clicks del ratón del usuario.
+        /// </summary>
+        /// <returns>Devuelve un objeto tipo Screen según las acciones del usuario.</returns>
         public Screen Click()
         {
             if (BtnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
@@ -184,7 +267,11 @@ namespace Client
             }
             return this;
         }
-
+        /// <summary>
+        /// Gestiona las entradas por teclado del usuario.
+        /// </summary>
+        /// <param name="key">Tecla pulsada por el usuario.</param>
+        /// <returns>Devuelve un objeto tipo Screen en función de las acciones del usuario.</returns>
         public Screen KeyboardAction(Keys key)
         {
             if(Host && key == Keys.Enter && Players.Count >= 2)
@@ -194,8 +281,11 @@ namespace Client
             }
             return this;
         }
-
-        public void onExiting(object sender, EventArgs args)
+        /// <summary>
+        /// Se ejecuta al cerrar la aplicación.
+        /// Se encarga de cerrar posibles sockets abiertos, hilos y demás procesos que no han finalizado ni terminado de forma natural.
+        /// </summary>
+        public void onExiting()
         {
             Server.closeServer();
             getNewPlayersThread.Join();

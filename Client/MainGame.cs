@@ -13,11 +13,30 @@ namespace Client
     /// </summary>
     public class MainGame : Microsoft.Xna.Framework.Game
     {
+        /// <summary>
+        ///Permite la configuración y manejo del apartado gráfico.
+        /// </summary>
         public GraphicsDeviceManager Graphics { get; set; }
+        /// <summary>
+        /// Objeto SpriteBatch que permite el dibujado de elementos en pantalla.
+        /// </summary>
         public SpriteBatch SpriteBatch { get; set; }
+        /// <summary>
+        /// Interfaz Screen que nos permite tener un único objeto que haga 
+        /// referencia a todas las posibles pantallas de la aplicación.
+        /// </summary>
         Screen Screen { get; set; }
+        /// <summary>
+        /// Indica si se ha hecho click con el ratón.
+        /// </summary>
         public bool MouseClick { get; set; }
+        /// <summary>
+        /// Colección de teclas que se utilizan indicando a su vez si se están pulsando o no.
+        /// </summary>
         Dictionary<Keys, bool> keys;
+        /// <summary>
+        /// Colección de todos los posibles sonidos que se reproducen en el juego.
+        /// </summary>
         public enum eSounds
         {
             click,
@@ -28,8 +47,13 @@ namespace Client
             newPlayer,
             playerLeave
         }
+        /// <summary>
+        /// Coleccion de efectos sonoros que relaciona los sonidos con los nombres dados en el enumerado eSounds.
+        /// </summary>
         public Dictionary<eSounds, SoundEffect> effects;
-
+        /// <summary>
+        /// Constructor de la clase MainGame.
+        /// </summary>
         public MainGame()
         {
             Graphics = new GraphicsDeviceManager(this);
@@ -172,10 +196,15 @@ namespace Client
             Screen.Draw(gameTime);
             base.Draw(gameTime);
         }
+        /// <summary>
+        /// Se ejecuta al finalizar la aplicación.
+        /// </summary>
+        /// <param name="sender">Objeto que lanza el evento.</param>
+        /// <param name="args">Argumentos del evento.</param>
         protected override void OnExiting(object sender, EventArgs args)
         {
             Console.WriteLine("Llamando onExiting");
-            Screen.onExiting(sender,args);
+            Screen.onExiting();
             Exit();
             base.OnExiting(sender, args);
         }

@@ -9,6 +9,14 @@ namespace ServerContador
 {
     class GestionClientes
     {
+        /// <summary>
+        /// Crea una sala, añade al host y lanza un hilo para la sala de espera.
+        /// Una vez creada, aumenta el número de la sala disponible.
+        /// </summary>
+        /// <param name="client">Creador de la sala.</param>
+        /// <param name="rooms">Coleccion de salas.</param>
+        /// <param name="roomsCount">Número de la nueva sala.</param>
+        /// <returns></returns>
         public static bool createRoom(Client client, Dictionary<int, Room> rooms,ref int roomsCount)
         {
             string name = client.getData();
@@ -31,6 +39,12 @@ namespace ServerContador
             }
             return false;
         }
+        /// <summary>
+        /// Une a los jugadores a la sala deseada en caso de que exista y no esté llena.
+        /// </summary>
+        /// <param name="client">Nuevo jugador a la sala.</param>
+        /// <param name="rooms">Colección de salas.</param>
+        /// <returns>Devuelve true si ha conseguido a la sala.</returns>
         public static bool joinRoom(Client client, Dictionary<int, Room> rooms)
         {
             //Comprueba si la sala a la que quiere entrar existe y si tiene menos de 8 clientes
@@ -74,6 +88,12 @@ namespace ServerContador
                 }
             }
         }
+        /// <summary>
+        /// Gestiona los clientes recien llegados y los redirecciona a crear o unir a sala.
+        /// </summary>
+        /// <param name="socket">Socket del cliente recién conectado.</param>
+        /// <param name="rooms">Colección de salas.</param>
+        /// <param name="roomCounter">Número de sala disponible.</param>
         public static void manageClient(TcpClient socket,Dictionary<int,Room> rooms,ref int roomCounter)
         {
             Console.WriteLine("New client appears");

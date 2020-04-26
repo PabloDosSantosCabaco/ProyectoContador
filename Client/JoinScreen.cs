@@ -9,34 +9,110 @@ namespace Client
 {
     class JoinScreen : Screen
     {
+        /// <summary>
+        /// Referencia la base del juego del que parten todas las pantallas.
+        /// </summary>
         private MainGame Game { get; set; }
+        /// <summary>
+        /// Boton de regreso a la pantalla anterior.
+        /// </summary>
         private Boton BtnBack { get; set; }
+        /// <summary>
+        /// Boton que permite crear la sala prepartida.
+        /// </summary>
         private Boton BtnStart { get; set; }
+        /// <summary>
+        /// Imagen que indica que el Boton está seleccionado.
+        /// </summary>
         private Texture2D BtnSelected { get; set; }
+        /// <summary>
+        /// Imagen de Boton por defecto.
+        /// </summary>
         private Texture2D BtnDefault { get; set; }
+        /// <summary>
+        /// Imagen de caja de texto por defecto.
+        /// </summary>
         private Texture2D InputDefault { get; set; }
+        /// <summary>
+        /// Imagen de caja de texto con el focus.
+        /// </summary>
         private Texture2D InputSelected { get; set; }
+        /// <summary>
+        /// Caja de texto para indicar la sala.
+        /// </summary>
         private TextBox TxtInputRoom { get; set; }
+        /// <summary>
+        /// Caja de texto para introducir el nombre del jugador.
+        /// </summary>
         private TextBox TxtInputName { get; set; }
+        /// <summary>
+        /// Indica qué caja de texto recibe el focus.
+        /// </summary>
         private TextBox Focused { get; set; }
+        /// <summary>
+        /// Indica si ha ocurrido un error con la sala deseada.
+        /// </summary>
         private bool RoomError { get; set; }
+        /// <summary>
+        /// Indica si hay un error con el nombre introducido.
+        /// </summary>
         private bool NameError { get; set; }
+        /// <summary>
+        /// Indica si se ha hecho click en el Boton de unirse.
+        /// </summary>
         private bool ClickJoin { get; set; }
+        /// <summary>
+        /// Mensaje de error debido a un error con la sala deseada.
+        /// </summary>
         private string ErrorRoomMsg { get; set; }
+        /// <summary>
+        /// Mensaje de error debido a un error con el nombre introducido.
+        /// </summary>
         private string ErrorNameMsg { get; set; }
+        /// <summary>
+        /// Colección de cajas de texto de la pantalla.
+        /// </summary>
         private List<TextBox> inputs = new List<TextBox>();
-
+        /// <summary>
+        /// Mensaje que indica cual es la caja de la sala.
+        /// </summary>
         private string RoomMessage { get; set; }
+        /// <summary>
+        /// Mensaje que indica cual es la caja del nombre.
+        /// </summary>
         private string NameMessage { get; set; }
+        /// <summary>
+        /// Fuente por defecto.
+        /// </summary>
         private SpriteFont DefaultFont { get; set; }
+        /// <summary>
+        /// Fuente de las cajas de texto.
+        /// </summary>
         private SpriteFont InputFont { get; set; }
+        /// <summary>
+        /// Fuente para mensajes de error.
+        /// </summary>
         private SpriteFont ErrorFont { get; set; }
+        /// <summary>
+        /// Indica el ancho de la pantalla.
+        /// </summary>
         private int ScreenWidth { get; set; }
+        /// <summary>
+        /// Indica el alto de la pantalla.
+        /// </summary>
         private int ScreenHeight { get; set; }
+        /// <summary>
+        /// Constructor del objeto JoinScreen.
+        /// </summary>
+        /// <param name="game">Base de la aplicación.</param>
         public JoinScreen(MainGame game)
         {
             Game = game;
         }
+        /// <summary>
+        /// Dibuja todos los elementos de la pantalla.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
         public void Draw(GameTime gameTime)
         {
             Game.SpriteBatch.Begin();
@@ -66,7 +142,9 @@ namespace Client
             BtnStart.draw(Game);
             Game.SpriteBatch.End();
         }
-
+        /// <summary>
+        /// Inicializa todas las propiedades y variables de la clase.
+        /// </summary>
         public void Initialize()
         {
             ScreenWidth = Game.Graphics.GraphicsDevice.Viewport.Width;
@@ -79,7 +157,9 @@ namespace Client
             RoomMessage = "Type room's number:";
             NameMessage = "Type your nick:";
         }
-
+        /// <summary>
+        /// Carga el contenido necesario en memoria.
+        /// </summary>
         public void LoadContent()
         {
             ErrorFont = Game.Content.Load<SpriteFont>("Fuentes/Error");
@@ -126,7 +206,11 @@ namespace Client
             inputs.Add(TxtInputRoom);
             
         }
-
+        /// <summary>
+        /// Se encarga del refresco de pantalla. Se realiza 60 veces por segundo.
+        /// </summary>
+        /// <param name="gameTime">Valor temporal interno.</param>
+        /// <returns></returns>
         public Screen Update(GameTime gameTime)
         {
             if (BtnStart.isHover(Mouse.GetState().X, Mouse.GetState().Y))
@@ -139,6 +223,12 @@ namespace Client
             }
             return this;
         }
+        /// <summary>
+        /// Comprueba si el nombre pasado por parámetro es válido teniendo en cuenta su longitud.
+        /// </summary>
+        /// <param name="newName">Nuevo nombre.</param>
+        /// <param name="input">Caja de texto en la que se introduce.</param>
+        /// <returns>El nuevo nombre si es válido, el antiguo si no.</returns>
         public string checkName(string newName, TextBox input)
         {
             //Digamos que sirve para los números
@@ -152,6 +242,10 @@ namespace Client
             }
             return input.Text;
         }
+        /// <summary>
+        /// Modifica el foco de las cajas de texto a la pasada por parámetro.
+        /// </summary>
+        /// <param name="newFocus">Caja de texto sobre la que hacer el foco.</param>
         public void changeFocus(TextBox newFocus)
         {
             foreach(TextBox input in inputs)
@@ -159,6 +253,10 @@ namespace Client
                 input.Focus = input == newFocus ? true : false;
             }
         }
+        /// <summary>
+        /// Comprueba si es posible avanzar a la siguiente pantalla según el orden lógico de vida del programa.
+        /// </summary>
+        /// <returns>Devuelve la siguiente o la actual en caso de error.</returns>
         public Screen goNext()
         {
             NameError = false;
@@ -209,6 +307,10 @@ namespace Client
             ClickJoin = false;
             return this;
         }
+        /// <summary>
+        /// Gestiona los clicks del ratón del usuario.
+        /// </summary>
+        /// <returns>Devuelve un objeto tipo Screen según las acciones del usuario.</returns>
         public Screen Click()
         {
             if (BtnBack.isHover(Mouse.GetState().X, Mouse.GetState().Y))
@@ -238,7 +340,11 @@ namespace Client
             }
             return this;
         }
-
+        /// <summary>
+        /// Gestiona las entradas por teclado del usuario.
+        /// </summary>
+        /// <param name="key">Tecla pulsada por el usuario.</param>
+        /// <returns>Devuelve un objeto tipo Screen en función de las acciones del usuario.</returns>
         public Screen KeyboardAction(Keys key)
         {
             if ((key >= Keys.A && key <= Keys.Z) ||
@@ -281,8 +387,11 @@ namespace Client
             }
             return this;
         }
-
-        public void onExiting(object sender, EventArgs args)
+        /// <summary>
+        /// Se ejecuta al cerrar la aplicación.
+        /// Se encarga de cerrar posibles sockets abiertos, hilos y demás procesos que no han finalizado ni terminado de forma natural.
+        /// </summary>
+        public void onExiting()
         {
 
         }

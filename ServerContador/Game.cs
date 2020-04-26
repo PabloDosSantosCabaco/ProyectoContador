@@ -9,6 +9,12 @@ namespace ServerContador
 {
     class Game
     {
+        /// <summary>
+        /// Comprueba si los jugadores están conectados y si no es así los elimina de la sala.
+        /// Si la sala está vacia, la cierra y elimina.
+        /// </summary>
+        /// <param name="room">Sala a comprobar.</param>
+        /// <param name="rooms">Coleccion de salas</param>
         public static void refreshGameConectedPeople(Room room,Dictionary<int,Room> rooms)
         {
             while (!room.GameFinished)
@@ -38,6 +44,18 @@ namespace ServerContador
                 Thread.Sleep(100);
             }
         }
+        /// <summary>
+        /// Función principal que gestiona el juego. Se encarga de generar una baraja base aleatoria y 
+        /// repartir a cada jugador la suya.
+        /// Mientras haya al menos 2 jugadores, la partida continúa existiendo. En cada turno, el servidor
+        /// espera respuesta unicamente del jugador cuyo nombre coincida con el turno. En función de su acción, añade 
+        /// o elimina cartas a la baraja del jugador.
+        /// Si el jugador se queda sin cartas, gana la partida, por lo que se le borra de la sala.
+        /// En todo momento se comprueba la conexion del jugador del turno mediante el hilo lanzado.
+        /// Si acaba la partida, cierra la sala.
+        /// </summary>
+        /// <param name="room">Sala actual.</param>
+        /// <param name="rooms">Coleccion de salas.</param>
         public static void partida(Room room,Dictionary<int,Room> rooms)
         {
             room.Match = new Match();
@@ -162,6 +180,11 @@ namespace ServerContador
                 WaitingRoom.closeRoom(room,rooms);
             }
         }
+        /// <summary>
+        /// Envía todos los datos necesarios a los jugadores para poder construir la interfaz de juego.
+        /// Turnoa ctual, valor y sentido de mesa, marcadores, cartas...
+        /// </summary>
+        /// <param name="room">Sala de juego.</param>
         public static void sendData(Room room)
         {
             foreach (var cl in room.Clients)
@@ -194,6 +217,11 @@ namespace ServerContador
                 }
             }
         }
+        /// <summary>
+        /// Desconecta a un cliente dado en una sala dada por parámetro debido a una desconexión inesperada.
+        /// </summary>
+        /// <param name="client">Cliente a desconectar.</param>
+        /// <param name="room">Sala donde está el cliente.</param>
         public static void deleteDisconnectedPlayer(string client, Room room)
         {
             room.Clients[room.Match.Turn].disconnect();
@@ -205,6 +233,12 @@ namespace ServerContador
             room.Match.PlayersDeck.Remove(client);
             room.PlayersNames.Remove(client);
         }
+        /// <summary>
+        /// Desconecta al jugador al cual le toca jugar debido a que ha ganado.
+        /// Si el jugador no es el útlimo, avanza el turno de juego.
+        /// </summary>
+        /// <param name="room">Sala donde se desconecta el cliente.</param>
+        /// <param name="lastPlayer">Indicador de si es el último.</param>
         public static void finishPlayer(Room room, bool lastPlayer)
         {
             string leavingPlayer = room.Match.Turn;
@@ -227,7 +261,12 @@ namespace ServerContador
             room.Match.PlayersDeck.Remove(leavingPlayer);
             room.PlayersNames.Remove(leavingPlayer);
         }
-        //Busca dentro de una baraja una carta concreta y la devuelve.
+        /// <summary>
+        /// Busca una carta concreta dentro de una baraja y devuelve la original de la propia baraja.
+        /// </summary>
+        /// <param name="playedCard">Carta a buscar.</param>
+        /// <param name="deck">Baraja en la que buscar.</param>
+        /// <returns></returns>
         public static Card searchCard(Card playedCard, List<Card> deck)
         {
             foreach (Card card in deck)
@@ -241,6 +280,10 @@ namespace ServerContador
             }
             return null;
         }
+        /// <summary>
+        /// Genera una carta aleatoria.
+        /// </summary>
+        /// <returns></returns>
         public static Card randomCard()
         {
             Random rand = new Random();
